@@ -1,0 +1,35 @@
+//# Selecting Creating and Deleting HTML Elements
+//--------# Selection
+console.log(document.documentElement)
+console.log(document.head)
+console.log(document.body)
+// one el
+document.getElementById('section--1')
+const header = document.querySelector('.header')
+// NodeList collection
+const allSections = document.querySelectorAll('.section')
+console.log(allSections)
+//HTMLCollection
+const allButtons = document.getElementsByTagName('button')
+console.log(allButtons)
+//HTMLCollection
+console.log(document.getElementsByClassName('btn'))
+
+
+//-----------#Creating and inserting elements
+
+// insertAdjacentHTML
+
+const message = document.createElement('div')
+// works the same as selecting : message now is just an object
+message.classList.add('cookie-message')
+message.innerHTML = `We use cookies for improved functionality and analytics.
+<button class="btn btn--close-cookie">Got it!</button>`
+
+header.prepend(message)
+const btnCloseCookieEL = document.querySelector('.btn--close-cookie')
+
+btnCloseCookieEL.addEventListener('click',(e)=>{
+    e.preventDefault()
+    message.classList.add('hidden')
+})

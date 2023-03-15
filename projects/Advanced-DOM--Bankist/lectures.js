@@ -26,10 +26,16 @@ message.classList.add('cookie-message')
 message.innerHTML = `We use cookies for improved functionality and analytics.
 <button class="btn btn--close-cookie">Got it!</button>`
 
-header.prepend(message)
-const btnCloseCookieEL = document.querySelector('.btn--close-cookie')
+header.append(message)//won't work cause ⬇ will overwrite
+// header.append(message)
+// instead use
+// header.append(message.cloneNode(true))
+// also there's a few methods that do almost taxdxhe same thing
 
-btnCloseCookieEL.addEventListener('click',(e)=>{
-    e.preventDefault()
-    message.classList.add('hidden')
+// header.before(message)
+// header.after(message)
+
+//-----------#Deleting elements
+document.querySelector('.btn--close-cookie').addEventListener('click',()=>{
+    message.remove()
 })

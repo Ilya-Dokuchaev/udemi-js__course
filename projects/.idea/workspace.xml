@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="bf4623c5-e489-405a-81be-c625c0fe81ee" name="Changes" comment="" />
+    <list default="true" id="bf4623c5-e489-405a-81be-c625c0fe81ee" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/Advanced-DOM--Bankist/lecture_overall.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Advanced-DOM--Bankist/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/Advanced-DOM--Bankist/index.html" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -10,13 +14,16 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="JavaScript File" />
         <option value="HTML File" />
+        <option value="JavaScript File" />
       </list>
     </option>
   </component>
   <component name="FormatOnSaveOptions">
     <option name="myRunOnSave" value="true" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
   <component name="JsBowerSettings">
     <bower-package value="" />
@@ -32,6 +39,7 @@
     <option name="selectedTabId" value="CurrentFile" />
   </component>
   <component name="ProjectId" id="2KdYjbZXVyIXK8uCDLc5ci21hn3" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="autoscrollToSource" value="true" />
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -44,9 +52,9 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
     "code.cleanup.on.save": "true",
-    "javascript.nodejs.core.library.configured.version": "16.18.0",
-    "javascript.nodejs.core.library.typings.version": "16.18.0",
-    "last_opened_file_path": "D:/projects/udemi-js/projects/modal_window",
+    "javascript.nodejs.core.library.configured.version": "16.10.0",
+    "javascript.nodejs.core.library.typings.version": "16.10.0",
+    "last_opened_file_path": "D:/proj_from_small/udemi-js__course/projects",
     "node.js.detected.package.ember-template-lint": "true",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.standard": "true",
@@ -80,10 +88,22 @@
       <workItem from="1674306064417" duration="20198000" />
       <workItem from="1674390534713" duration="490000" />
       <workItem from="1675087979573" duration="18000" />
+      <workItem from="1679923761742" duration="1509000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
 </project>

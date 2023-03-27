@@ -2,9 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="bf4623c5-e489-405a-81be-c625c0fe81ee" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Advanced-DOM--Bankist/lecture_overall.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Object-oriented_programming/challenge_#1.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Object-oriented_programming/index.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Object-oriented_programming/script.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Advanced-DOM--Bankist/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/Advanced-DOM--Bankist/index.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -39,7 +40,9 @@
     <option name="selectedTabId" value="CurrentFile" />
   </component>
   <component name="ProjectId" id="2KdYjbZXVyIXK8uCDLc5ci21hn3" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="autoscrollToSource" value="true" />
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -47,9 +50,12 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "DefaultHtmlFileTemplate": "HTML File",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "WebServerToolWindowFactoryState": "false",
     "code.cleanup.on.save": "true",
     "javascript.nodejs.core.library.configured.version": "16.10.0",
@@ -88,7 +94,7 @@
       <workItem from="1674306064417" duration="20198000" />
       <workItem from="1674390534713" duration="490000" />
       <workItem from="1675087979573" duration="18000" />
-      <workItem from="1679923761742" duration="1509000" />
+      <workItem from="1679923761742" duration="8500000" />
     </task>
     <servers />
   </component>
@@ -105,5 +111,8 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
   </component>
 </project>

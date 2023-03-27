@@ -5,7 +5,7 @@ console.log(document.head)
 console.log(document.body)
 // one el
 document.getElementById('section--1')
-const header = document.querySelector('.header')
+const headerEl = document.querySelector('.header')
 // NodeList collection
 const allSections = document.querySelectorAll('.section')
 console.log(allSections)
@@ -23,10 +23,10 @@ console.log(document.getElementsByClassName('btn'))
 const message = document.createElement('div')
 // works the same as selecting : message now is just an object
 message.classList.add('cookie-message')
-message.innerHTML = `We use cookies for improved functionality and analytics.
+message.innerHTML = `<span>We use cookies for improved functionality and analytics.</span>
 <button class="btn btn--close-cookie">Got it!</button>`
 
-header.append(message)//won't work cause ⬇ will overwrite
+headerEl.append(message)//won't work cause ⬇ will overwrite
 // header.append(message)
 // instead use
 // header.append(message.cloneNode(true))

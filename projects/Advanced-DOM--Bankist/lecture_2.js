@@ -1,7 +1,7 @@
 //# Styles Attributes and Classes
 
 message.style.backgroundColor = '#37383d'// will set an inline style for message
-message.style.width = '103%'// same as above
+message.style.width = '100%'// same as above
 console.log('------')//divider
 console.log(message.style.color)// will print an empty log
 //because it's a computed style not inline
@@ -13,7 +13,7 @@ console.log(getComputedStyle(message).height)//50px
 
 // Then we can do some things with that values inside Javascript
 message.style.height = Number.parseFloat/*we need that because its computed value is a string*/(
-    getComputedStyle(message).height, 10
+   getComputedStyle(message).height, 10
 ) + 30 + 'px'
 
 

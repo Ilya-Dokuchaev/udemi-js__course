@@ -56,3 +56,91 @@ console.log(ilya.__proto__.hasOwnProperty('species'))//true
 // The prototype chain screenshot 📷
 
 
+//# ES6 classes.
+// Classes is a syntax sugar, they use prototypal inheritance
+
+// class expression
+/*
+ const PersonCl = class  {
+
+ }
+ */
+
+// class declaration
+
+class PersonCl {
+    constructor(fullName, birthYear) {
+        this.fullName = fullName
+        this.birthYear = birthYear
+    }
+
+    get age() {
+        return 2037 - this.birthYear
+    }
+
+    // also we must use getter to set back the predefined property to that we checked
+    get fullName() {
+        return this._fullName
+    }
+
+// check if userName is a full name
+    // Pattern for setting a property that already exist
+    set fullName(name) {
+        console.log(name)
+        name.includes(' ')
+            // we use _ to create a new variable for setter otherwise there will be name conflict
+            ? this._fullName = name
+            : console.log(`${name} is not a full name!`)
+    }
+
+    // to create a methods :
+
+    // Methods will be added to prototype property
+    calcAge() {
+        console.log(2037 - this.birthYear)
+    }
+}
+
+// Also we can add methods the old way
+PersonCl.prototype.greet = function () {
+    console.log(`Hi, my name's ${this.fullName}`)
+}
+const jessica = new PersonCl('Jessica Davis', 1999)
+console.log(jessica)// PersonCl {firstName: 'Jessica', birthYear: 1999}
+jessica.calcAge()//38
+jessica.greet()// Hi, my name's Jessica
+console.log(jessica.__proto__ === PersonCl.prototype)// true
+
+
+//** use of getter
+console.log(jessica.age)//38
+
+/*
+ 1. Classes aren't hoisted // Use before they are declared is not possible as in regular functions
+ 2. Classes are first-class citizens // This means we can pass them into functions and also
+ return them from functions
+ 3. Classes bodies are always executed in strict mode
+ */
+
+
+// # Getters and Setters
+const account = {
+    owner: 'jonas',
+    movements: [100, 200, 300, 400, 100],
+    // getter
+    get latest() {
+        return this.movements.slice(-1).pop()
+    },
+    //setter. NOTE: always takes one param as argument
+    set latest(mov) {
+        return this.movements.push(mov)
+    },
+}
+// use of getter: get the data without calling the method. NOTE: take a look at PersonCl ☝
+console.log(account.latest)//100
+//use of setter: use case - check the data before we create an object using classes. NOTE: take a
+// look at
+// PersonCl ☝
+account.latest = 999
+console.log(account.movements)//[100,200,300,400,100,999]
+

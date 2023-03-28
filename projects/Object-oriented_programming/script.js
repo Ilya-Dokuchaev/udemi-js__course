@@ -93,8 +93,13 @@ class PersonCl {
             : console.log(`${name} is not a full name!`)
     }
 
-    // to create a methods :
+// static methods
+    static hey() {
+        console.log('HEY')
+    }
 
+    // instance methods
+    // to create a methods :
     // Methods will be added to prototype property
     calcAge() {
         console.log(2037 - this.birthYear)
@@ -144,3 +149,45 @@ console.log(account.latest)//100
 account.latest = 999
 console.log(account.movements)//[100,200,300,400,100,999]
 
+//------------------ # Static methods
+// is also like an Array.from() or Number.parseFloat() they are not attached to the object
+// itself but into its constructor function in .prototype
+
+/*PersonCl.hey = function () {
+ console.log('HEY')
+ console.log(this)// points to constructor function, bc of rule 'this in method points the
+ // object calling that method'
+ }
+ PersonCl.hey()// HEY*/
+
+// jessica.hey()// jessica.hey() is not a function. Object cannot access this hey static method
+// because it isn't inherited from PersonCl
+//NOTE: to declare a static method inside class look PersonCl
+PersonCl.hey()//HEY
+
+
+//-----------# Object.create()
+// Uses prototype inheritance also but in different way
+// syntax create
+const PersonProto = {
+    calcAge() {
+        console.log(2037 - this.birthYear)
+    },
+    initial(firstName, birthYear) {
+        this.firstName = firstName
+        this.birthYear = birthYear
+    }
+}
+const steven = Object.create(PersonProto)
+console.log(steven)// now doesn't have anything except method that is in its prototype chain
+steven.name = 'Steven'
+steven.birthYear = 1992
+steven.calcAge()//45
+console.log(steven)
+//#screenshot #10 📷
+console.log(steven.__proto__ === PersonProto)//true
+// To not set obj properties obj.property = something. We can make a method that is seems like
+// similar to a constructor function. NOTE: look up for initial
+const sarah = Object.create(PersonProto)
+sarah.initial('Sarah', 2000)
+sarah.calcAge()//37

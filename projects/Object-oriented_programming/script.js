@@ -173,7 +173,7 @@ const PersonProto = {
     calcAge() {
         console.log(2037 - this.birthYear)
     },
-    initial(firstName, birthYear) {
+    initial(firstName,birthYear){
         this.firstName = firstName
         this.birthYear = birthYear
     }
@@ -185,9 +185,9 @@ steven.birthYear = 1992
 steven.calcAge()//45
 console.log(steven)
 //#screenshot #10 📷
-console.log(steven.__proto__ === PersonProto)//true
+console.log(steven.__proto__===PersonProto)//true
 // To not set obj properties obj.property = something. We can make a method that is seems like
 // similar to a constructor function. NOTE: look up for initial
 const sarah = Object.create(PersonProto)
-sarah.initial('Sarah', 2000)
+sarah.initial('Sarah',2000)
 sarah.calcAge()//37

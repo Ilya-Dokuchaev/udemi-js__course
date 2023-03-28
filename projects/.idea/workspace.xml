@@ -3,7 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="bf4623c5-e489-405a-81be-c625c0fe81ee" name="Changes" comment="">
       <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/challenge_#2.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Object-oriented_programming/challenge_#2.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Object-oriented_programming/script.js" beforeDir="false" afterPath="$PROJECT_DIR$/Object-oriented_programming/script.js" afterDir="false" />
     </list>
@@ -88,6 +88,11 @@
     ]
   }
 }</component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\proj_from_small\udemi-js__course\projects\Object-oriented_programming" />
+    </key>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -100,7 +105,7 @@
       <workItem from="1674390534713" duration="490000" />
       <workItem from="1675087979573" duration="18000" />
       <workItem from="1679923761742" duration="9852000" />
-      <workItem from="1680002375324" duration="8571000" />
+      <workItem from="1680002375324" duration="9105000" />
     </task>
     <servers />
   </component>

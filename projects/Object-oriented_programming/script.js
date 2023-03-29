@@ -173,7 +173,7 @@ const PersonProto = {
     calcAge() {
         console.log(2037 - this.birthYear)
     },
-    initial(firstName,birthYear){
+    initial(firstName, birthYear) {
         this.firstName = firstName
         this.birthYear = birthYear
     }
@@ -185,34 +185,91 @@ steven.birthYear = 1992
 steven.calcAge()//45
 console.log(steven)
 //#screenshot #10 📷
-console.log(steven.__proto__===PersonProto)//true
+console.log(steven.__proto__ === PersonProto)//true
 // To not set obj properties obj.property = something. We can make a method that is seems like
 // similar to a constructor function. NOTE: look up for initial
 const sarah = Object.create(PersonProto)
-sarah.initial('Sarah',2000)
+sarah.initial('Sarah', 2000)
 sarah.calcAge()//37
 // ----------------------------# inheritance between Classes constructor functions
 // using constructor functions
 // Screenshot #11 Inheritance between classes📷
-const Person2 = function (firstName,birthYear){
-    this.firstName= firstName
+const Person2 = function (firstName, birthYear) {
+    this.firstName = firstName
     this.birthYear = birthYear
 }
-Person2.prototype.calcAge= function (){
- return  2037-this.birthYear
+Person2.prototype.calcAge = function () {
+    return 2037 - this.birthYear
 }
 
-const Student = function (firstName,birthYear,course){
-    Person2.call(this,firstName,birthYear)// to manually set this keyword we use call
+const Student = function (firstName, birthYear, course) {
+    Person2.call(this, firstName, birthYear)// to manually set this keyword we use call
     this.course = course
 }
 Student.prototype = Object.create(Person2.prototype)
 
-Student.prototype.introduce = function (){
+Student.prototype.introduce = function () {
     console.log(`My name is ${this.firstName} I'm ${this.calcAge()}, and I'm studying ${this.course}`)
 }
-const mike = new Student('Mike',1992,'Math')
+const mike = new Student('Mike', 1992, 'Math')
 mike.introduce()//My name is Mike I'm 1992, and I'm studying Math
 // Screenshot #12 Inheritance between classes📷
 // Screenshot #13 Inheritance between classes📷
 // Screenshot #14 Inheritance between classes📷
+
+//---------------# Inheritance between Classes ES6
+class Person3 {
+    constructor(fullName, birthYear) {
+        this.fullName = fullName
+        this.birthYear = birthYear
+    }
+
+    calcAge() {
+        return (new Date().getFullYear() - this.birthYear)
+    }
+
+    greet() {
+        console.log(`Hi! ${this.fullName}`)
+    }
+
+    get age() {
+        return this.calcAge()
+    }
+
+    set fullName(name) {
+        name.includes(' ')
+            ? this._fullName = name
+            : console.log(`${name} is not a full name`)
+    }
+
+    get fullName() {
+        return this._fullName
+    }
+
+    static hey() {
+        console.log('Hey there!')
+    }
+}
+
+class Student2 extends Person3 {
+    //to set the additional properties use 👇
+    constructor(fullName, birthYear, course) {
+        //needed to pass parent params into super
+        //Is equivalent to Person3.call(this, fullName, birthYear)
+        //Always need to happen first otherwise we won't be able to use this keyword
+        super(fullName, birthYear);
+        this.course = course
+    }
+
+    introduce() {
+        !this.fullName
+            ? console.warn("There's something wrong check the log above")
+            : console.log(`Hi! My name's ${this.fullName} I'm ${this.age} years old, and I'm studying ${this.course}`)
+    }
+}
+
+const martha = new Student2('Martha Junior', 1995, 'Customer service')
+martha.introduce()
+Person3.hey()
+console.log(martha.fullName)
+console.log(martha)

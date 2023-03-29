@@ -191,3 +191,28 @@ console.log(steven.__proto__===PersonProto)//true
 const sarah = Object.create(PersonProto)
 sarah.initial('Sarah',2000)
 sarah.calcAge()//37
+// ----------------------------# inheritance between Classes constructor functions
+// using constructor functions
+// Screenshot #11 Inheritance between classes📷
+const Person2 = function (firstName,birthYear){
+    this.firstName= firstName
+    this.birthYear = birthYear
+}
+Person2.prototype.calcAge= function (){
+ return  2037-this.birthYear
+}
+
+const Student = function (firstName,birthYear,course){
+    Person2.call(this,firstName,birthYear)// to manually set this keyword we use call
+    this.course = course
+}
+Student.prototype = Object.create(Person2.prototype)
+
+Student.prototype.introduce = function (){
+    console.log(`My name is ${this.firstName} I'm ${this.calcAge()}, and I'm studying ${this.course}`)
+}
+const mike = new Student('Mike',1992,'Math')
+mike.introduce()//My name is Mike I'm 1992, and I'm studying Math
+// Screenshot #12 Inheritance between classes📷
+// Screenshot #13 Inheritance between classes📷
+// Screenshot #14 Inheritance between classes📷

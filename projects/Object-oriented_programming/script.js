@@ -273,3 +273,98 @@ martha.introduce()
 Person3.hey()
 console.log(martha.fullName)
 console.log(martha)
+//---------------# Inheritance between Classes : Object.create()
+
+const PersonProto2 = {
+    calcAge() {
+        return (2037 - this.birthYear)
+    },
+    init(firstName, birthYear) {
+        this.firstName = firstName
+        this.birthYear = birthYear
+    }
+}
+const steven2 = Object.create(PersonProto2)
+
+const StudentProto = Object.create(PersonProto2)
+StudentProto.init = function (firstName, birthYear, course) {
+    PersonProto2.init.call(this, firstName, birthYear)
+    this.course = course
+}
+StudentProto.introduce = function () {
+    console.log(`My name is ${this.firstName} I'm ${this.calcAge()} years old, and I'm studying ${this.course}`)
+}
+const jay = Object.create(StudentProto)
+
+// screenshot 📷 Inheritance between Classes : Object.create()
+
+jay.init('Jay', 1999, 'Biology')
+console.log(jay)
+jay.introduce()
+
+//-------------- Big Class Example
+class Account {
+    // These are the props outside the constructor
+    // NOTE: always put semicolon ";" in these things
+    // Public fields
+    locale = navigator.language;
+    // Private fields
+    #movements = [];
+    // These are the props that are seated into prototype
+    #pin;
+
+    constructor(owner, currency, pin) {
+        this.owner = owner
+        this.currency = currency
+        this.#pin = pin
+    }
+    // Public interface ex:
+    deposit(val){
+        this.#movements.push(val)
+        return this
+    }
+    withdraw(val){
+        this.deposit(-val)
+        return this
+
+    }
+    get movementsArray(){
+        return this.#movements
+    }
+    _approveLoan(){
+        return true
+    }
+    requestLoan(val){
+        if(this._approveLoan())this.deposit(val)
+        console.log(`Loan of ${val} ${this.currency} approved`)
+        return this
+    }
+
+}
+const Ilya  = new Account('Ilya', 'RUB', 2222)
+Ilya.deposit(200)
+Ilya.withdraw(100)
+Ilya.requestLoan(1000)
+console.log(Ilya.movementsArray)
+console.log(Ilya)
+// #------------Encapsulation and Data Privacy
+// to get the property unmutated use a convention of _property
+// but still it is just for developers to not change prop directly by accident
+
+
+/*
+* 1.Public fields
+* 2.Private fields
+* 3.Public methods
+* 4.Private methods
+*/
+// Look up for the explanation ☝
+// Also there's a static version of all of 4 fields
+console.log(Ilya)
+// #--------Chaining methods of a class
+// to make a method to be chainable return this inside method. look up on Account class
+Ilya.deposit(200).deposit(200).deposit(200).deposit(200).withdraw(1000).withdraw(1000).requestLoan(10000).requestLoan(10000).requestLoan(10000)
+console.log(Ilya.movementsArray)
+
+
+// #----------Summarize screenshot of section 📷

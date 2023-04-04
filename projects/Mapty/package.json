@@ -1,0 +1,15 @@
+{
+  "dependencies": {
+    "leaflet": "^1.9.3"
+  },
+  "name": "mapty",
+  "version": "1.0.0",
+  "main": "lecture.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

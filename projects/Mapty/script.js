@@ -77,7 +77,7 @@ class App {
     constructor() {
         this._getPosition()
         this._getLocalStorage()
-        ///////////////////////////////////////////////////////
+        //------------------------------------------------------------------------------------------
         //Event Listeners
         // submitting the form and display the marker
         form.addEventListener('submit', this._newWorkout.bind(this))
@@ -105,7 +105,7 @@ class App {
             attribution: '&copy; <a' + ' href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(this.#map);
         //render marker from local storage
-        this.#workouts.forEach(el=>this._renderWorkoutMarker(el))
+        this.#workouts.forEach(el => this._renderWorkoutMarker(el))
         // Marker of current user position
         //TODO marker change
         L.marker(coordsArray)
@@ -196,29 +196,34 @@ class App {
     _renderWorkoutOnList(workout) {
         //TODO make list scrollable obviously
         const html = `
-        <li class="workout workout--${workout.type}" data-id="${workout.id}">
-          <h2 class="workout__title">${workout.description}</h2>
-          <div class="workout__details">
-            <span class="workout__icon">${workout.type === 'running' ? '🏃' : '🚴'}</span>
-            <span class="workout__value">${workout.distance}</span>
-            <span class="workout__unit">km</span>
-          </div>
-          <div class="workout__details">
-            <span class="workout__icon">⏱</span>
-            <span class="workout__value">${workout.duration}</span>
-            <span class="workout__unit">min</span>
-          </div>
-          <div class="workout__details">
-            <span class="workout__icon">⚡</span>
-            <span class="workout__value">${workout.type === 'running' ? workout.pace : workout.speed}</span>
-            <span class="workout__unit">${workout.type === 'running' ? 'min/km' : 'km/h'}</span>
-          </div>
-          <div class="workout__details">
-            <span class="workout__icon">${workout.type === 'running' ? '🦶' : '⛰'}</span>
-            <span class="workout__value">${workout.type === 'running' ? workout.cadence : workout.elevation}</span>
-            <span class="workout__unit">${workout.type === 'running' ? 'spm' : 'm'}</span>
-          </div>
-        </li>`
+            <div class="workout__item">
+                <li class="workout workout--${workout.type}" data-id="${workout.id}">
+                  <h2 class="workout__title">${workout.description}</h2>
+                  <button class="btn btn__workout btn__workout--edit btn--small"><ion-icon name="pencil-outline"></ion-icon></button>
+                  <div class="workout__details">
+                    <span class="workout__icon">${workout.type === 'running' ? '🏃' : '🚴'}</span>
+                    <span class="workout__value">${workout.distance}</span>
+                    <span class="workout__unit">km</span>
+                  </div>
+                  <div class="workout__details">
+                    <span class="workout__icon">⏱</span>
+                    <span class="workout__value">${workout.duration}</span>
+                    <span class="workout__unit">min</span>
+                  </div>
+                  <div class="workout__details">
+                    <span class="workout__icon">⚡</span>
+                    <span class="workout__value">${workout.type === 'running' ? workout.pace : workout.speed}</span>
+                    <span class="workout__unit">${workout.type === 'running' ? 'min/km' : 'km/h'}</span>
+                  </div>
+                  <div class="workout__details">
+                    <span class="workout__icon">${workout.type === 'running' ? '🦶' : '⛰'}</span>
+                    <span class="workout__value">${workout.type === 'running' ? workout.cadence : workout.elevation}</span>
+                    <span class="workout__unit">${workout.type === 'running' ? 'spm' : 'm'}</span>
+                  </div> 
+                </li>
+                <button class="btn btn__workout btn__workout--close btn--small"><ion-icon class="close-circle" name="close-circle-outline"></ion-icon></button>
+            </div>
+        `
         form.insertAdjacentHTML('afterend', html)
     }
 
@@ -244,27 +249,24 @@ class App {
         const workoutEl = e.target.closest('.workout')
         if(!workoutEl) return;
         const workout = this.#workouts.find(el => el.id === workoutEl.dataset.id)
-        this.#map.setView(workout.coords, this.#mapZoom,
-            {
-                animation: true,
-                pan: {
-                    duration: 1,
-                }
+        this.#map.setView(workout.coords, this.#mapZoom, {
+            animation: true, pan: {
+                duration: 1,
             }
-        )
+        })
     }
 
     _getLocalStorage() {
-        const data  =  JSON.parse(localStorage.getItem('workouts'))
-        if(!data)return
-        this.#workouts=data
-        this.#workouts.forEach(el=>{
+        const data = JSON.parse(localStorage.getItem('workouts'))
+        if(!data) return
+        this.#workouts = data
+        this.#workouts.forEach(el => {
             this._renderWorkoutOnList(el)
         })
     }
 
     _setLocalStorage() {
-        localStorage.setItem('workouts',JSON.stringify(this.#workouts))
+        localStorage.setItem('workouts', JSON.stringify(this.#workouts))
     }
 }
 

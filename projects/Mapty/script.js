@@ -1,6 +1,4 @@
 'use strict'
-// prettier-ignore
-const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 //global variables
 const form = document.querySelector('.form');
@@ -24,6 +22,11 @@ class Workout {
         this.calcPace()
     }
 
+    _setDescription() {
+        const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        this.description = `${this.type[0].toUpperCase()}${this.type.slice(1)} on ${months[this.date.getMonth()]} ${this.date.getDate()}`
+    }
+
     calcSpeed() {
         return this.speed = Number(Math.abs(this.distance / (this.duration / 60)).toPrecision(3))
     }
@@ -39,6 +42,7 @@ class Running extends Workout {
     constructor(coords, distance, duration, cadence) {
         super(coords, distance, duration)
         this.cadence = cadence;
+        this._setDescription()
     }
 }
 
@@ -48,15 +52,15 @@ class Cycling extends Workout {
     constructor(coords, distance, duration, elevation) {
         super(coords, distance, duration)
         this.elevation = elevation;
+        this._setDescription()
     }
 }
-
-const run = new Running([0, 0], 2, 50, 1.2)
 
 class App {
     #map;
     #markerEvent;
     #mapEvent;
+    // noinspection JSMismatchedCollectionQueryUpdate
     #workouts = []
 
     constructor() {
@@ -69,11 +73,8 @@ class App {
 
     _getPosition() {
         // To get the coords and map display
-        navigator.geolocation.getCurrentPosition(this._loadMap.bind(this),
-            // if the setting of not to show the location is on
-            this._loadDefaultMap.bind(this),
-            {enableHighAccuracy: true}
-        )
+        navigator.geolocation.getCurrentPosition(this._loadMap.bind(this), // if the setting of not to show the location is on
+            this._loadDefaultMap.bind(this), {enableHighAccuracy: true})
     }
 
     _loadMap(position) {
@@ -84,15 +85,13 @@ class App {
         this.#map = L.map('map').setView(coordsArray, 16);
         // Loading map styles aka tiles and adding them to the map itself
         L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a' +
-                ' href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            attribution: '&copy; <a' + ' href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(this.#map);
         // Marker of current user position
         L.marker(coordsArray)
             .addTo(this.#map)
             .bindPopup(L.popup({
-                autoClose: false,
-                closeOnClick: false,
+                autoClose: false, closeOnClick: false,
             }))
             .setPopupContent("You're somewhere here!")
             .openPopup()
@@ -105,8 +104,7 @@ class App {
         alert('Could not get your position the service may not work correctly!')
         this.#map = L.map('map').setView([51.505, -0.09], 13)
         L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a' +
-                ' href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            attribution: '&copy; <a' + ' href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(this.#map);
         this.#map.on('click', this._showForm.bind(this))
     }
@@ -114,6 +112,12 @@ class App {
     _showForm(mapE) {
         this.#mapEvent = mapE
         form.classList.remove('hidden')
+    }
+
+    _hideForm() {
+        form.style.display = 'none'
+        form.classList.add('hidden')
+        setTimeout(() => form.style.display = 'grid', 1000)
     }
 
     _toggleElevationField() {
@@ -133,7 +137,6 @@ class App {
         // Check if the data is valid
         const validInputs = (...inputs) => inputs.every(el => Number.isFinite(el))
         const isPositive = (...inputs) => inputs.every(el => el > 0)
-
         // If workout is running create running
         if(type === 'running') {
             const cadence = Number(inputCadence.value)
@@ -142,7 +145,6 @@ class App {
             }
             workout = new Running([lat, lng], distance, duration, cadence)
         }
-
         // If it is a cycling create cycling
         if(type === 'cycling') {
             const elevation = Number(inputElevation.value)
@@ -154,31 +156,60 @@ class App {
         // Add new obj workout to workout array
         this.#workouts.push(workout)
 
-
         // Render marker on map and workout
-
         // display the marker
-        this.#markerEvent = L.marker([lat, lng]).addTo(this.#map)
-        this.#markerEvent.bindPopup(
-            L.popup({
-                maxWidth: 300,
-                minWidth: 100,
-                autoClose: false,
-                closeOnClick: false,
-                className: `${workout.type}-popup`
-            })
-        )
+        this._renderWorkoutMarker(workout)
+        //Render workout on list
+        this._renderWorkoutOnList(workout)
+        // clearing the input fields
+        inputElArr.forEach(el => el.value = '')
+        // remove form from workout list
+        this._hideForm()
+    }
+
+    _renderWorkoutOnList(workout) {
+        const html = `
+        <li class="workout workout--${workout.type}" data-id="${workout.id}">
+          <h2 class="workout__title">${workout.description}</h2>
+          <div class="workout__details">
+            <span class="workout__icon">${workout.type === 'running' ? '🏃' : '🚴'}</span>
+            <span class="workout__value">${workout.distance}</span>
+            <span class="workout__unit">km</span>
+          </div>
+          <div class="workout__details">
+            <span class="workout__icon">⏱</span>
+            <span class="workout__value">${workout.duration}</span>
+            <span class="workout__unit">min</span>
+          </div>
+          <div class="workout__details">
+            <span class="workout__icon">⚡</span>
+            <span class="workout__value">${workout.type === 'running' ? workout.pace : workout.speed}</span>
+            <span class="workout__unit">${workout.type === 'running' ? 'min/km' : 'km/h'}</span>
+          </div>
+          <div class="workout__details">
+            <span class="workout__icon">${workout.type === 'running' ? '🦶' : '⛰'}</span>
+            <span class="workout__value">${workout.type === 'running' ? workout.cadence : workout.elevation}</span>
+            <span class="workout__unit">${workout.type === 'running' ? 'spm' : 'm'}</span>
+          </div>
+        </li>`
+        form.insertAdjacentHTML('afterend', html)
+    }
+
+    _renderWorkoutMarker(workout) {
+        this.#markerEvent = L.marker(workout.coords).addTo(this.#map)
+        this.#markerEvent.bindPopup(L.popup({
+            maxWidth: 300,
+            minWidth: 100,
+            autoClose: false,
+            closeOnClick: false,
+            className: `${workout.type}-popup`
+        }))
             .setPopupContent(`
-            Distance: ${workout.distance} km 
-            Speed: ${workout.speed} km/h
-            Duration: ${workout.duration} min
+               ${workout.type === 'running' ? '🏃' : '🚴'}
+               ${workout.description}
             `)
             .openPopup()
 
-        //TODO remove form from workout list
-
-        // clearing the input fields
-        inputElArr.forEach(el => el.value = '')
     }
 }
 

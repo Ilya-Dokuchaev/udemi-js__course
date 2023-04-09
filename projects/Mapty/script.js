@@ -1,6 +1,13 @@
 'use strict'
+//TODO ability to edit workouts
+//TODO delete all workouts at once
+//TODO sort by distance,type,duration
+//TODO real alert and messages and input confirmation
+//TODO show all workouts - zoom out of min,max,lng/lat
+//TODO draw a shape of workout
+//TODO more UI friendly
 
-//global variables
+//global variables of HTML elements
 const form = document.querySelector('.form');
 const containerWorkouts = document.querySelector('.workouts');
 const inputType = document.querySelector('.form__input--type');
@@ -8,11 +15,14 @@ const inputDistance = document.querySelector('.form__input--distance');
 const inputDuration = document.querySelector('.form__input--duration');
 const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
+// to clear all inputs at once
 const inputElArr = [inputDistance, inputCadence, inputDuration, inputElevation]
 
+//TODO find a way to not make it spaghetti-code
 class Workout {
     date = new Date();
     id = (Date.now() + '').slice(-10)
+    type;
 
     constructor(coords, distance, duration) {
         this.coords = coords // represented by an array of latitude and longitude [lat,lng]
@@ -61,14 +71,21 @@ class App {
     #markerEvent;
     #mapEvent;
     // noinspection JSMismatchedCollectionQueryUpdate
-    #workouts = []
+    #workouts = [];
+    #mapZoom = 16
 
     constructor() {
+        this._getPosition()
+        this._getLocalStorage()
+        ///////////////////////////////////////////////////////
+        //Event Listeners
         // submitting the form and display the marker
         form.addEventListener('submit', this._newWorkout.bind(this))
         // changing the corresponding input fields depending on activity type
         inputType.addEventListener('change', this._toggleElevationField)
-        this._getPosition()
+        containerWorkouts.addEventListener('click', this._moveToPopUp.bind(this))
+        //TODO the delete option of specific workout dont forget to clear the whole locale
+        // storage and setting it back again at least
     }
 
     _getPosition() {
@@ -82,12 +99,15 @@ class App {
         const {latitude, longitude} = position.coords
         const coordsArray = [latitude, longitude]
         // Map centering at user position
-        this.#map = L.map('map').setView(coordsArray, 16);
         // Loading map styles aka tiles and adding them to the map itself
+        this.#map = L.map('map').setView(coordsArray, this.#mapZoom);
         L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
             attribution: '&copy; <a' + ' href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(this.#map);
+        //render marker from local storage
+        this.#workouts.forEach(el=>this._renderWorkoutMarker(el))
         // Marker of current user position
+        //TODO marker change
         L.marker(coordsArray)
             .addTo(this.#map)
             .bindPopup(L.popup({
@@ -96,7 +116,9 @@ class App {
             .setPopupContent("You're somewhere here!")
             .openPopup()
         // Event handler of map clicks and form appearing
+        //TODO cancel available when form shows up
         this.#map.on('click', this._showForm.bind(this))
+
 
     }
 
@@ -110,8 +132,10 @@ class App {
     }
 
     _showForm(mapE) {
+        //TODO the workaround of displaying temporary marker
         this.#mapEvent = mapE
         form.classList.remove('hidden')
+        inputDistance.focus()
     }
 
     _hideForm() {
@@ -165,9 +189,12 @@ class App {
         inputElArr.forEach(el => el.value = '')
         // remove form from workout list
         this._hideForm()
+        //setting the localStorage
+        this._setLocalStorage()
     }
 
     _renderWorkoutOnList(workout) {
+        //TODO make list scrollable obviously
         const html = `
         <li class="workout workout--${workout.type}" data-id="${workout.id}">
           <h2 class="workout__title">${workout.description}</h2>
@@ -196,6 +223,7 @@ class App {
     }
 
     _renderWorkoutMarker(workout) {
+        //TODO corresponding marker change
         this.#markerEvent = L.marker(workout.coords).addTo(this.#map)
         this.#markerEvent.bindPopup(L.popup({
             maxWidth: 300,
@@ -211,7 +239,35 @@ class App {
             .openPopup()
 
     }
+
+    _moveToPopUp(e) {
+        const workoutEl = e.target.closest('.workout')
+        if(!workoutEl) return;
+        const workout = this.#workouts.find(el => el.id === workoutEl.dataset.id)
+        this.#map.setView(workout.coords, this.#mapZoom,
+            {
+                animation: true,
+                pan: {
+                    duration: 1,
+                }
+            }
+        )
+    }
+
+    _getLocalStorage() {
+        const data  =  JSON.parse(localStorage.getItem('workouts'))
+        if(!data)return
+        this.#workouts=data
+        this.#workouts.forEach(el=>{
+            this._renderWorkoutOnList(el)
+        })
+    }
+
+    _setLocalStorage() {
+        localStorage.setItem('workouts',JSON.stringify(this.#workouts))
+    }
 }
 
+// TODO get a mobile version
 const app = new App()
 

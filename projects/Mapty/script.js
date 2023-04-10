@@ -84,6 +84,7 @@ class App {
         // changing the corresponding input fields depending on activity type
         inputType.addEventListener('change', this._toggleElevationField)
         containerWorkouts.addEventListener('click', this._moveToPopUp.bind(this))
+        containerWorkouts.addEventListener('click', this._deleteSpecWork.bind(this))
         //TODO the delete option of specific workout dont forget to clear the whole locale
         // storage and setting it back again at least
     }
@@ -91,7 +92,11 @@ class App {
     _getPosition() {
         // To get the coords and map display
         navigator.geolocation.getCurrentPosition(this._loadMap.bind(this), // if the setting of not to show the location is on
-            this._loadDefaultMap.bind(this), {enableHighAccuracy: true})
+            this._loadDefaultMap.bind(this), {
+                enableHighAccuracy: true,
+                maximumAge: 5000,
+                timeout: 15000,
+            })
     }
 
     _loadMap(position) {
@@ -116,7 +121,6 @@ class App {
             .setPopupContent("You're somewhere here!")
             .openPopup()
         // Event handler of map clicks and form appearing
-        //TODO cancel available when form shows up
         this.#map.on('click', this._showForm.bind(this))
 
 
@@ -136,6 +140,10 @@ class App {
         this.#mapEvent = mapE
         form.classList.remove('hidden')
         inputDistance.focus()
+        //cancel available when form shows up
+        document.addEventListener('keydown', (evt) => {
+            if(evt.key === 'Escape') form.classList.add('hidden')
+        })
     }
 
     _hideForm() {
@@ -221,7 +229,7 @@ class App {
                     <span class="workout__unit">${workout.type === 'running' ? 'spm' : 'm'}</span>
                   </div> 
                 </li>
-                <button class="btn btn__workout btn__workout--close btn--small"><ion-icon class="close-circle" name="close-circle-outline"></ion-icon></button>
+                <button class="btn btn__workout btn__workout--close btn--small" data-id='${workout.id}'><ion-icon class="close-circle" name="close-circle-outline"></ion-icon></button>
             </div>
         `
         form.insertAdjacentHTML('afterend', html)
@@ -249,6 +257,7 @@ class App {
         const workoutEl = e.target.closest('.workout')
         if(!workoutEl) return;
         const workout = this.#workouts.find(el => el.id === workoutEl.dataset.id)
+        console.log(workout)
         this.#map.setView(workout.coords, this.#mapZoom, {
             animation: true, pan: {
                 duration: 1,
@@ -256,13 +265,25 @@ class App {
         })
     }
 
+    _deleteSpecWork(e) {
+        const closeEl = e.target.closest('.btn__workout--close')
+        if(!closeEl) return
+        const workout = this.#workouts.findIndex(el => el.id === closeEl.dataset.id)
+        this.#workouts.splice(workout, 1)
+        this._renderWorkoutOnList()
+    }
+
     _getLocalStorage() {
         const data = JSON.parse(localStorage.getItem('workouts'))
         if(!data) return
-        this.#workouts = data
+        //fix the localStorage prototype chain
+        this.#workouts = data.map(el => {
+            return Object.assign(el.type === 'running' ? new Running() : new Cycling(), el)
+        })
         this.#workouts.forEach(el => {
             this._renderWorkoutOnList(el)
         })
+        console.log(this.#workouts)
     }
 
     _setLocalStorage() {

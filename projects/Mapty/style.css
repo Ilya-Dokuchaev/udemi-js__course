@@ -107,7 +107,13 @@ a:visited {
     justify-self: end;
     background-color: transparent;
     border: none;
+    cursor: pointer;
+    transition: all 0.1s ease-out;
 }
+.btn__workout:hover{
+    transform: scale(150%);
+}
+
 
 .workout__buttons {
     display: flex;

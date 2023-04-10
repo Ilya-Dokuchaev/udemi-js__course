@@ -264,6 +264,7 @@ class App {
         })
     }
 
+    //The deleting option of specific workout
     _deleteSpecWork(e) {
         const closeEl = e.target.closest('.btn__workout--close')
         if(!closeEl) return
@@ -271,12 +272,7 @@ class App {
         const workoutEl = document.querySelector(`.workout[data-id='${workout.id}']`)
         workoutEl.remove()
         closeEl.remove()
-        console.log(workoutEl)
-
-        console.log(workout.id)
-
-        this.#workouts.splice(this.#workouts.findIndex(el=>el.id===workout.id),1)
-        console.log(this.#workouts)
+        this.#workouts.splice(this.#workouts.findIndex(el => el.id === workout.id), 1)
         this._setLocalStorage()
     }
 

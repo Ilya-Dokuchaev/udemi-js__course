@@ -257,7 +257,6 @@ class App {
         const workoutEl = e.target.closest('.workout')
         if(!workoutEl) return;
         const workout = this.#workouts.find(el => el.id === workoutEl.dataset.id)
-        console.log(workout)
         this.#map.setView(workout.coords, this.#mapZoom, {
             animation: true, pan: {
                 duration: 1,
@@ -268,9 +267,17 @@ class App {
     _deleteSpecWork(e) {
         const closeEl = e.target.closest('.btn__workout--close')
         if(!closeEl) return
-        const workout = this.#workouts.findIndex(el => el.id === closeEl.dataset.id)
-        this.#workouts.splice(workout, 1)
-        this._renderWorkoutOnList()
+        const workout = this.#workouts.find(el => el.id === closeEl.dataset.id)
+        const workoutEl = document.querySelector(`.workout[data-id='${workout.id}']`)
+        workoutEl.remove()
+        closeEl.remove()
+        console.log(workoutEl)
+
+        console.log(workout.id)
+
+        this.#workouts.splice(this.#workouts.findIndex(el=>el.id===workout.id),1)
+        console.log(this.#workouts)
+        this._setLocalStorage()
     }
 
     _getLocalStorage() {

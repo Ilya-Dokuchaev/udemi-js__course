@@ -15,6 +15,7 @@ const inputDistance = document.querySelector('.form__input--distance');
 const inputDuration = document.querySelector('.form__input--duration');
 const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
+const deleteALlEl = document.querySelector('.btn__delete')
 // to clear all inputs at once
 const inputElArr = [inputDistance, inputCadence, inputDuration, inputElevation]
 
@@ -69,6 +70,7 @@ class Cycling extends Workout {
 class App {
     #map;
     #markerEvent;
+    #markerEvents = [];
     #mapEvent;
     // noinspection JSMismatchedCollectionQueryUpdate
     #workouts = [];
@@ -85,6 +87,7 @@ class App {
         inputType.addEventListener('change', this._toggleElevationField)
         containerWorkouts.addEventListener('click', this._moveToPopUp.bind(this))
         containerWorkouts.addEventListener('click', this._deleteSpecWork.bind(this))
+        deleteALlEl.addEventListener('click', this._deleteAllWork.bind(this))
         //TODO the delete option of specific workout dont forget to clear the whole locale
         // storage and setting it back again at least
     }
@@ -237,7 +240,10 @@ class App {
 
     _renderWorkoutMarker(workout) {
         //TODO corresponding marker change
-        this.#markerEvent = L.marker(workout.coords).addTo(this.#map)
+        this.#markerEvent = L.marker(workout.coords)
+        this.#markerEvent.addTo(this.#map)
+        workout.markerCoords = this.#markerEvent._leaflet_id
+        this.#markerEvents.push(this.#markerEvent)
         this.#markerEvent.bindPopup(L.popup({
             maxWidth: 300,
             minWidth: 100,
@@ -270,9 +276,23 @@ class App {
         if(!closeEl) return
         const workout = this.#workouts.find(el => el.id === closeEl.dataset.id)
         const workoutEl = document.querySelector(`.workout[data-id='${workout.id}']`)
+        this.#markerEvent = this.#markerEvents.find(el => el._leaflet_id === workout.markerCoords)
+        this.#markerEvents.splice(this.#markerEvents.findIndex(el => el === this.#markerEvent), 1)
         workoutEl.remove()
         closeEl.remove()
+        this.#markerEvent.remove()
         this.#workouts.splice(this.#workouts.findIndex(el => el.id === workout.id), 1)
+        this._setLocalStorage()
+    }
+
+    _deleteAllWork() {
+        const allWorkouts = document.querySelectorAll('.workout')
+        const allCloseEl = document.querySelectorAll('.btn__workout--close')
+        allWorkouts.forEach(el => el.remove())
+        allCloseEl.forEach(el => el.remove())
+        this.#markerEvents.forEach(el => el.remove())
+        this.#markerEvents = []
+        this.#workouts = []
         this._setLocalStorage()
     }
 
@@ -286,7 +306,6 @@ class App {
         this.#workouts.forEach(el => {
             this._renderWorkoutOnList(el)
         })
-        console.log(this.#workouts)
     }
 
     _setLocalStorage() {

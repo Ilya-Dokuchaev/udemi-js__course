@@ -93,12 +93,34 @@ a:visited {
 }
 
 .btn {
-    border-radius: 20%;
+    border-radius: 5px;
+    cursor: pointer;
+    border: none;
+    padding: 0.3rem 0.7rem;
+
+}
+
+.btn--medium:active {
+    background: var(--color-dark--1);
+    color: var(--color-light--1);
+}
+
+.btn--medium:hover {
+    transform: scale(110%);
+}
+
+.btn--medium {
+    background: var(--color-light--1);
+    max-width: 20rem;
+    width: 100%;
+    font-size: 1.4rem;
+    margin: 2rem auto;
+    transition: all 0.1s ease-in;
+
 }
 
 .btn--small {
     max-width: 4rem;
-    padding: 0.3rem 0.7rem;
     font-size: 2.4rem;
     color: var(--color-light--1);
 }
@@ -106,14 +128,12 @@ a:visited {
 .btn__workout {
     justify-self: end;
     background-color: transparent;
-    border: none;
-    cursor: pointer;
     transition: all 0.1s ease-out;
 }
-.btn__workout:hover{
+
+.btn__workout:hover {
     transform: scale(150%);
 }
-
 
 .workout__buttons {
     display: flex;

@@ -4,7 +4,7 @@
 //TODO real alert and messages and input confirmation
 //TODO show all workouts - zoom out of min,max,lng/lat
 //TODO more UI friendly
-
+import {Cycling, Running} from "./workout.js";
 //global variables of HTML elements
 const form = document.querySelector('.form');
 const containerWorkouts = document.querySelector('.workouts');
@@ -18,65 +18,19 @@ const deleteALlEl = document.querySelector('.btn__delete')
 const inputElArr = [inputDistance, inputCadence, inputDuration, inputElevation]
 
 //TODO find a way to not make it spaghetti-code
-class Workout {
-    date = new Date();
-    id = (Date.now() + '').slice(-10)
-    type;
-
-    constructor(coords, distance, duration) {
-        this.coords = coords // represented by an array of latitude and longitude [lat,lng]
-        this.distance = distance
-        this.duration = duration// in min
-        this.calcSpeed()
-        this.calcPace()
-    }
-
-    _setDescription() {
-        const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-        this.description = `${this.type[0].toUpperCase()}${this.type.slice(1)} on ${months[this.date.getMonth()]} ${this.date.getDate()}`
-    }
-
-    calcSpeed() {
-        return this.speed = Number(Math.abs(this.distance / (this.duration / 60)).toPrecision(3))
-    }
-
-    calcPace() {
-        return this.pace = Number(Math.abs(this.duration / this.distance).toPrecision(3))
-    }
-}
-
-class Running extends Workout {
-    type = 'running'
-
-    constructor(coords, distance, duration, cadence) {
-        super(coords, distance, duration)
-        this.cadence = cadence;
-        this._setDescription()
-    }
-}
-
-class Cycling extends Workout {
-    type = 'cycling'
-
-    constructor(coords, distance, duration, elevation) {
-        super(coords, distance, duration)
-        this.elevation = elevation;
-        this._setDescription()
-    }
-}
 
 class App {
     #map;
     #markerEvent;
     #markerEvents = [];
     #mapEvent;
-    // noinspection JSMismatchedCollectionQueryUpdate
+    #mapEventsCoordsArray = [];
     #workouts = [];
     #mapZoom = 16
-    #markersArr = [];
-    #polyline;
-    #polilynes = [];
     #distance = 0;
+    // noinspection JSMismatchedCollectionQueryUpdate
+    #polyline;
+    #polilineStorageArray = [];
 
     constructor() {
         this._getPosition()
@@ -141,48 +95,49 @@ class App {
     _showForm(mapE) {
         //the workaround of displaying temporary marker
         this.#mapEvent = mapE
+        const {lat, lng} = this.#mapEvent.latlng
         form.classList.remove('hidden')
+        this.#mapEventsCoordsArray.push([lat, lng])
         inputDuration.focus()
-        this._showTemp()
+        // this._showTemp()
+        if(this.#mapEventsCoordsArray.length <= 1) return
         this._buildRoute()
         this._showRoute()
         //cancel available when form shows up
         form.addEventListener('keydown', (evt) => {
             if(evt.key === 'Escape') {
-                form.classList.add('hidden')
-                this._hideTemp()
-                this._removeRoute()
-                this._clearMarkersArr()
+                this._hideForm()
+                // form.classList.add('hidden')
+                // this._hideTemp()
+                // this._removeRoute()
+                // this._clearMarkersArr()
             }
         })
     }
 
-    _showTemp() {
-        this.#markerEvent = L.marker(this.#mapEvent.latlng).addTo(this.#map)
-        this.#markersArr.push(this.#markerEvent)
-    }
+    // _showTemp() {
+    //     this.#markerEvent = L.marker(this.#mapEvent.latlng).addTo(this.#map)
+    //     this.#markersArr.push(this.#markerEvent)
+    // }
 
-    _hideTemp() {
-        this.#markersArr.map(el => el.remove())
-    }
+    // _hideTemp() {
+    //     this.#markersArr.map(el => el.remove())
+    // }
 
-    _clearMarkersArr() {
-        this.#markersArr.splice(0)
-    }
+    // _clearMarkersArr() {
+    //     this.#markersArr.splice(0)
+    // }
 
     // draw a shape of workout
     _buildRoute() {
-        const latlng = []
-        this.#markersArr.forEach((_, i) => {
-            const {lat, lng} = this.#markersArr[i]._latlng
-            latlng.push([lat, lng])
-        })
-        this.#polyline = L.polyline(latlng, {color: 'red'});
-        this.#polilynes.push(this.#polyline)
-        if(latlng.length === 1) return
-        const [[lat1, lon1], [lat2, lon2]] = latlng
-        this.#distance = Number((this.#distance + this._calculateDistance(lat1, lon1, lat2, lon2)).toFixed(2))
-        inputDistance.textContent = `${this.#distance} km`
+        let lat1, lat2, lon1, lon2
+        this.#polyline = L.polyline(this.#mapEventsCoordsArray, {color: 'red'});
+        this.#polilineStorageArray.push(this.#polyline);
+        [lat1,lon1] = this.#mapEventsCoordsArray.at(-2);
+        [lat2,lon2] = this.#mapEventsCoordsArray.at(-1)
+        let distanceBetweenTwo = this._calculateDistance(lat1,lon1,lat2,lon2)
+        this.#distance += distanceBetweenTwo
+        inputDistance.textContent = `${this.#distance.toFixed(2)} km`
     }
 
     _calculateDistance(lat1, lon1, lat2, lon2) {
@@ -208,7 +163,7 @@ class App {
     }
 
     _removeRoute() {
-        this.#polilynes.forEach(el => el.removeFrom(this.#map))
+        this.#polilineStorageArray.forEach(el => el.removeFrom(this.#map))
     }
 
     _hideForm() {
@@ -225,11 +180,11 @@ class App {
     _newWorkout(e) {
         e.preventDefault()
         let workout;
-        // Get data from form
+        // Get data from forms
         const type = inputType.value
         const duration = Number(inputDuration.value)
         // getting the coords of click on map
-        const {lat, lng} = this.#markersArr[0]._latlng
+        const {lat, lng} = this.#mapEvent.latlng
         // Check if the data is valid
         const validInputs = (...inputs) => inputs.every(el => Number.isFinite(el))
         const isPositive = (...inputs) => inputs.every(el => el > 0)
@@ -239,7 +194,7 @@ class App {
             if(!validInputs(duration, cadence) || !isPositive(duration, cadence)) {
                 return alert("You must put only the positive numbers to corresponding inputs")
             }
-            workout = new Running([lat, lng], this.#distance, duration, cadence)
+            workout = new Running([[lat, lng]], this.#distance, duration, cadence)
         }
         // If it is a cycling create cycling
         if(type === 'cycling') {
@@ -256,7 +211,7 @@ class App {
         this._renderWorkoutMarker(workout)
         //Render workout on list
         this._renderWorkoutOnList(workout)
-        this._clearMarkersArr()
+        // this._clearMarkersArr()
         // clearing the input fields
         inputElArr.forEach(el => el.value = '')
         // remove form from workout list
@@ -301,7 +256,7 @@ class App {
 
     _renderWorkoutMarker(workout) {
         //TODO corresponding marker change
-        this.#markerEvent = L.marker(workout.coords)
+        this.#markerEvent = L.marker(workout.coordsPointsArr[0])
         this.#markerEvent.addTo(this.#map)
         workout.markerCoords = this.#markerEvent._leaflet_id
         this.#markerEvents.push(this.#markerEvent)
@@ -319,11 +274,12 @@ class App {
             .openPopup()
 
     }
+
     _moveToPopUp(e) {
         const workoutEl = e.target.closest('.workout')
         if(!workoutEl) return;
         const workout = this.#workouts.find(el => el.id === workoutEl.dataset.id)
-        this.#map.setView(workout.coords, this.#mapZoom, {
+        this.#map.setView(workout.coordsPointsArr[0], this.#mapZoom, {
             animation: true, pan: {
                 duration: 1,
             }
@@ -340,7 +296,7 @@ class App {
         this.#markerEvents.splice(this.#markerEvents.findIndex(el => el === this.#markerEvent), 1)
         workoutEl.remove()
         closeEl.remove()
-        this._hideTemp()
+        // this._hideTemp()
         this.#markerEvent.remove()
         this.#workouts.splice(this.#workouts.findIndex(el => el.id === workout.id), 1)
         this._setLocalStorage()
@@ -356,7 +312,7 @@ class App {
         this.#markerEvents = []
         this.#workouts = []
         this._setLocalStorage()
-        this._hideTemp()
+        // this._hideTemp()
     }
 
     _getLocalStorage() {

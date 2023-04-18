@@ -1,10 +1,8 @@
 'use strict'
 //TODO ability to edit workouts
-//TODO delete all workouts at once
 //TODO sort by distance,type,duration
 //TODO real alert and messages and input confirmation
 //TODO show all workouts - zoom out of min,max,lng/lat
-//TODO draw a shape of workout
 //TODO more UI friendly
 
 //global variables of HTML elements
@@ -27,8 +25,8 @@ class Workout {
 
     constructor(coords, distance, duration) {
         this.coords = coords // represented by an array of latitude and longitude [lat,lng]
-        this.distance = distance // km/h
-        this.duration = duration // in min
+        this.distance = distance
+        this.duration = duration// in min
         this.calcSpeed()
         this.calcPace()
     }
@@ -75,6 +73,10 @@ class App {
     // noinspection JSMismatchedCollectionQueryUpdate
     #workouts = [];
     #mapZoom = 16
+    #markersArr = [];
+    #polyline;
+    #polilynes = [];
+    #distance = 0;
 
     constructor() {
         this._getPosition()
@@ -88,8 +90,6 @@ class App {
         containerWorkouts.addEventListener('click', this._moveToPopUp.bind(this))
         containerWorkouts.addEventListener('click', this._deleteSpecWork.bind(this))
         deleteALlEl.addEventListener('click', this._deleteAllWork.bind(this))
-        //TODO the delete option of specific workout dont forget to clear the whole locale
-        // storage and setting it back again at least
     }
 
     _getPosition() {
@@ -113,7 +113,9 @@ class App {
             attribution: '&copy; <a' + ' href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(this.#map);
         //render marker from local storage
-        this.#workouts.forEach(el => this._renderWorkoutMarker(el))
+        this.#workouts.forEach(el => {
+            this._renderWorkoutMarker(el)
+        })
         // Marker of current user position
         //TODO marker change
         L.marker(coordsArray)
@@ -125,8 +127,6 @@ class App {
             .openPopup()
         // Event handler of map clicks and form appearing
         this.#map.on('click', this._showForm.bind(this))
-
-
     }
 
     _loadDefaultMap() {
@@ -139,14 +139,76 @@ class App {
     }
 
     _showForm(mapE) {
-        //TODO the workaround of displaying temporary marker
+        //the workaround of displaying temporary marker
         this.#mapEvent = mapE
         form.classList.remove('hidden')
-        inputDistance.focus()
+        inputDuration.focus()
+        this._showTemp()
+        this._buildRoute()
+        this._showRoute()
         //cancel available when form shows up
-        document.addEventListener('keydown', (evt) => {
-            if(evt.key === 'Escape') form.classList.add('hidden')
+        form.addEventListener('keydown', (evt) => {
+            if(evt.key === 'Escape') {
+                form.classList.add('hidden')
+                this._hideTemp()
+                this._removeRoute()
+                this._clearMarkersArr()
+            }
         })
+    }
+
+    _showTemp() {
+        this.#markerEvent = L.marker(this.#mapEvent.latlng).addTo(this.#map)
+        this.#markersArr.push(this.#markerEvent)
+    }
+
+    _hideTemp() {
+        this.#markersArr.map(el => el.remove())
+    }
+
+    _clearMarkersArr() {
+        this.#markersArr.splice(0)
+    }
+
+    // draw a shape of workout
+    _buildRoute() {
+        const latlng = []
+        this.#markersArr.forEach((_, i) => {
+            const {lat, lng} = this.#markersArr[i]._latlng
+            latlng.push([lat, lng])
+        })
+        this.#polyline = L.polyline(latlng, {color: 'red'});
+        this.#polilynes.push(this.#polyline)
+        if(latlng.length === 1) return
+        const [[lat1, lon1], [lat2, lon2]] = latlng
+        this.#distance = Number((this.#distance + this._calculateDistance(lat1, lon1, lat2, lon2)).toFixed(2))
+        inputDistance.textContent = `${this.#distance} km`
+    }
+
+    _calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371; // Radius of the earth in km
+        const dLat = deg2rad(lat2 - lat1);  // deg2rad below
+        const dLon = deg2rad(lon2 - lon1);
+        const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2)
+        ;
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        // Distance in km
+        return R * c;
+
+        function deg2rad(deg) {
+            return deg * (Math.PI / 180)
+        }
+    }
+
+    _showRoute() {
+        this.#polyline.addTo(this.#map)
+    }
+
+    _removeRoute() {
+        this.#polilynes.forEach(el => el.removeFrom(this.#map))
     }
 
     _hideForm() {
@@ -165,37 +227,36 @@ class App {
         let workout;
         // Get data from form
         const type = inputType.value
-        const distance = Number(inputDistance.value)
         const duration = Number(inputDuration.value)
         // getting the coords of click on map
-        const {lat, lng} = this.#mapEvent.latlng
+        const {lat, lng} = this.#markersArr[0]._latlng
         // Check if the data is valid
         const validInputs = (...inputs) => inputs.every(el => Number.isFinite(el))
         const isPositive = (...inputs) => inputs.every(el => el > 0)
         // If workout is running create running
         if(type === 'running') {
             const cadence = Number(inputCadence.value)
-            if(!validInputs(distance, duration, cadence) || !isPositive(distance, duration, cadence)) {
+            if(!validInputs(duration, cadence) || !isPositive(duration, cadence)) {
                 return alert("You must put only the positive numbers to corresponding inputs")
             }
-            workout = new Running([lat, lng], distance, duration, cadence)
+            workout = new Running([lat, lng], this.#distance, duration, cadence)
         }
         // If it is a cycling create cycling
         if(type === 'cycling') {
             const elevation = Number(inputElevation.value)
-            if(!validInputs(distance, duration, elevation) || !isPositive(distance, duration)) {
+            if(!validInputs(duration, elevation) || !isPositive(duration)) {
                 return alert(`You must put only the positive numbers to corresponding inputs,\n except for the elevation it should be just a number`)
             }
-            workout = new Cycling([lat, lng], distance, duration, elevation)
+            workout = new Cycling([lat, lng], this.#distance, duration, elevation)
         }
         // Add new obj workout to workout array
         this.#workouts.push(workout)
-
         // Render marker on map and workout
         // display the marker
         this._renderWorkoutMarker(workout)
         //Render workout on list
         this._renderWorkoutOnList(workout)
+        this._clearMarkersArr()
         // clearing the input fields
         inputElArr.forEach(el => el.value = '')
         // remove form from workout list
@@ -258,7 +319,6 @@ class App {
             .openPopup()
 
     }
-
     _moveToPopUp(e) {
         const workoutEl = e.target.closest('.workout')
         if(!workoutEl) return;
@@ -280,11 +340,13 @@ class App {
         this.#markerEvents.splice(this.#markerEvents.findIndex(el => el === this.#markerEvent), 1)
         workoutEl.remove()
         closeEl.remove()
+        this._hideTemp()
         this.#markerEvent.remove()
         this.#workouts.splice(this.#workouts.findIndex(el => el.id === workout.id), 1)
         this._setLocalStorage()
     }
 
+    // delete all workouts at once
     _deleteAllWork() {
         const allWorkouts = document.querySelectorAll('.workout')
         const allCloseEl = document.querySelectorAll('.btn__workout--close')
@@ -294,6 +356,7 @@ class App {
         this.#markerEvents = []
         this.#workouts = []
         this._setLocalStorage()
+        this._hideTemp()
     }
 
     _getLocalStorage() {

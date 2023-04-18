@@ -28,7 +28,6 @@ class App {
     #workouts = [];
     #mapZoom = 16
     #distance = 0;
-    // noinspection JSMismatchedCollectionQueryUpdate
     #polyline;
     #polilineStorageArray = [];
 
@@ -67,9 +66,13 @@ class App {
             attribution: '&copy; <a' + ' href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(this.#map);
         //render marker from local storage
-        this.#workouts.forEach(el => {
-            this._renderWorkoutMarker(el)
-        })
+        if(localStorage.length) {
+            this.#workouts.forEach(el => {
+                this._renderWorkoutMarker(el)
+                this.#mapEventsCoordsArray = el.coordsPointsArr
+                this._renderRouteFromWorkout(el)
+            })
+        }
         // Marker of current user position
         //TODO marker change
         L.marker(coordsArray)
@@ -101,15 +104,14 @@ class App {
         inputDuration.focus()
         // this._showTemp()
         if(this.#mapEventsCoordsArray.length <= 1) return
-        this._buildRoute()
-        this._showRoute()
+        this._buildRouteTemp()
         //cancel available when form shows up
         form.addEventListener('keydown', (evt) => {
             if(evt.key === 'Escape') {
                 this._hideForm()
                 // form.classList.add('hidden')
                 // this._hideTemp()
-                // this._removeRoute()
+                // this._removeRouteSpecific()
                 // this._clearMarkersArr()
             }
         })
@@ -129,15 +131,26 @@ class App {
     // }
 
     // draw a shape of workout
-    _buildRoute() {
+    _buildRouteTemp() {
+
         let lat1, lat2, lon1, lon2
-        this.#polyline = L.polyline(this.#mapEventsCoordsArray, {color: 'red'});
+        this.#polyline = L.polyline(this.#mapEventsCoordsArray, {color: 'red'})
         this.#polilineStorageArray.push(this.#polyline);
-        [lat1,lon1] = this.#mapEventsCoordsArray.at(-2);
-        [lat2,lon2] = this.#mapEventsCoordsArray.at(-1)
-        let distanceBetweenTwo = this._calculateDistance(lat1,lon1,lat2,lon2)
+        this.#polyline.addTo(this.#map);
+
+        [lat1, lon1] = this.#mapEventsCoordsArray.at(-2);
+        [lat2, lon2] = this.#mapEventsCoordsArray.at(-1)
+        let distanceBetweenTwo = this._calculateDistance(lat1, lon1, lat2, lon2)
         this.#distance += distanceBetweenTwo
         inputDistance.textContent = `${this.#distance.toFixed(2)} km`
+    }
+
+    _renderRouteFromWorkout(workout) {
+        this._buildRouteTemp()
+        this.#distance = 0
+        inputDistance.textContent = ''
+        workout.routeId = this.#polyline._leaflet_id
+        this.#mapEventsCoordsArray = []
     }
 
     _calculateDistance(lat1, lon1, lat2, lon2) {
@@ -158,17 +171,17 @@ class App {
         }
     }
 
-    _showRoute() {
-        this.#polyline.addTo(this.#map)
-    }
-
-    _removeRoute() {
-        this.#polilineStorageArray.forEach(el => el.removeFrom(this.#map))
+    _removeRouteSpecific(workout) {
+        this.#polyline = this.#polilineStorageArray.find(el => el._leaflet_id === workout.routeId)
+        this.#polilineStorageArray.splice(this.#polilineStorageArray.findIndex(el => el === this.#polyline), 1)
+        this.#polyline.removeFrom(this.#map)
     }
 
     _hideForm() {
         form.style.display = 'none'
         form.classList.add('hidden')
+        this.#distance = 0
+        inputDistance.textContent = ''
         setTimeout(() => form.style.display = 'grid', 1000)
     }
 
@@ -184,7 +197,7 @@ class App {
         const type = inputType.value
         const duration = Number(inputDuration.value)
         // getting the coords of click on map
-        const {lat, lng} = this.#mapEvent.latlng
+        // const [lat, lng] = this.#mapEventsCoordsArray[0]
         // Check if the data is valid
         const validInputs = (...inputs) => inputs.every(el => Number.isFinite(el))
         const isPositive = (...inputs) => inputs.every(el => el > 0)
@@ -194,7 +207,7 @@ class App {
             if(!validInputs(duration, cadence) || !isPositive(duration, cadence)) {
                 return alert("You must put only the positive numbers to corresponding inputs")
             }
-            workout = new Running([[lat, lng]], this.#distance, duration, cadence)
+            workout = new Running(this.#mapEventsCoordsArray, this.#distance.toFixed(2), duration, cadence)
         }
         // If it is a cycling create cycling
         if(type === 'cycling') {
@@ -202,15 +215,17 @@ class App {
             if(!validInputs(duration, elevation) || !isPositive(duration)) {
                 return alert(`You must put only the positive numbers to corresponding inputs,\n except for the elevation it should be just a number`)
             }
-            workout = new Cycling([lat, lng], this.#distance, duration, elevation)
+            workout = new Cycling(this.#mapEventsCoordsArray, this.#distance.toFixed(2), duration, elevation)
         }
         // Add new obj workout to workout array
         this.#workouts.push(workout)
+
         // Render marker on map and workout
         // display the marker
         this._renderWorkoutMarker(workout)
         //Render workout on list
         this._renderWorkoutOnList(workout)
+        this._renderRouteFromWorkout(workout)
         // this._clearMarkersArr()
         // clearing the input fields
         inputElArr.forEach(el => el.value = '')
@@ -258,7 +273,7 @@ class App {
         //TODO corresponding marker change
         this.#markerEvent = L.marker(workout.coordsPointsArr[0])
         this.#markerEvent.addTo(this.#map)
-        workout.markerCoords = this.#markerEvent._leaflet_id
+        workout.markerId = this.#markerEvent._leaflet_id
         this.#markerEvents.push(this.#markerEvent)
         this.#markerEvent.bindPopup(L.popup({
             maxWidth: 300,
@@ -292,12 +307,14 @@ class App {
         if(!closeEl) return
         const workout = this.#workouts.find(el => el.id === closeEl.dataset.id)
         const workoutEl = document.querySelector(`.workout[data-id='${workout.id}']`)
-        this.#markerEvent = this.#markerEvents.find(el => el._leaflet_id === workout.markerCoords)
+        this.#markerEvent = this.#markerEvents.find(el => el._leaflet_id === workout.markerId)
         this.#markerEvents.splice(this.#markerEvents.findIndex(el => el === this.#markerEvent), 1)
         workoutEl.remove()
         closeEl.remove()
         // this._hideTemp()
+        this._removeRouteSpecific(workout)
         this.#markerEvent.remove()
+
         this.#workouts.splice(this.#workouts.findIndex(el => el.id === workout.id), 1)
         this._setLocalStorage()
     }

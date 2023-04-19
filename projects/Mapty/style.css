@@ -59,7 +59,7 @@ a:visited {
     list-style: none;
     height: 77vh;
     overflow-y: scroll;
-    overflow-x: hidden;
+    min-width: 45rem;
 }
 
 .workouts::-webkit-scrollbar {
@@ -284,21 +284,12 @@ a:visited {
     border: none;
 }
 .leaflet-div-icon .icon{
-    color: rgb(160, 6, 6);
+    color: #42484d;
     width: 100%;
     height: 100%;
 }
-.leaflet-div-icon .icon--animated{
+.leaflet-div-icon .icon--animated {
     width: 100%;
     height: 100%;
     color: #2d3439;
-    animation-iteration-count: infinite;
-    animation-name: example;
-    animation-duration: 1.2s;
-}
-@keyframes example {
-    0%  {color:var(--color-brand--2);
-        transform:  scale(100%);}
-    50%{color: #2d3439;transform:  scale(110%)}
-    100% {color:var(--color-brand--2); transform:   scale(100%)}
 }

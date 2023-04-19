@@ -32,7 +32,8 @@ class App {
     #polilineStorageArray = [];
     #polilineStorageArrayCopy = [];
     #starterMarker;
-    #markerTempClickArr=[];
+    #markerTempClickArr = [];
+    #markerEventEnd;
 
     constructor() {
         this.#_getPosition()
@@ -46,6 +47,44 @@ class App {
         containerWorkouts.addEventListener('click', this.#_moveToPopUp.bind(this))
         containerWorkouts.addEventListener('click', this.#_deleteSpecWork.bind(this))
         deleteALlEl.addEventListener('click', this.#_deleteAllWork.bind(this))
+    }
+
+    static _toggleElevationField() {
+        inputElevation.closest('.form__row').classList.toggle('form__row--hidden')
+        inputCadence.closest('.form__row').classList.toggle('form__row--hidden')
+    }
+
+    static #_renderWorkoutOnList(workout) {
+        const html = `
+            <div class="workout__item">
+                <li class="workout workout--${workout.type}" data-id="${workout.id}">
+                  <h2 class="workout__title">${workout.description}</h2>
+                  <button class="btn btn__workout btn__workout--edit btn--small"><ion-icon name="pencil-outline"></ion-icon></button>
+                  <div class="workout__details">
+                    <span class="workout__icon">${workout.type === 'running' ? '🏃' : '🚴'}</span>
+                    <span class="workout__value">${workout.distance}</span>
+                    <span class="workout__unit">km</span>
+                  </div>
+                  <div class="workout__details">
+                    <span class="workout__icon">⏱</span>
+                    <span class="workout__value">${workout.duration}</span>
+                    <span class="workout__unit">min</span>
+                  </div>
+                  <div class="workout__details">
+                    <span class="workout__icon">⚡</span>
+                    <span class="workout__value">${workout.type === 'running' ? workout.pace : workout.speed}</span>
+                    <span class="workout__unit">${workout.type === 'running' ? 'min/km' : 'km/h'}</span>
+                  </div>
+                  <div class="workout__details">
+                    <span class="workout__icon">${workout.type === 'running' ? '🦶' : '⛰'}</span>
+                    <span class="workout__value">${workout.type === 'running' ? workout.cadence : workout.elevation}</span>
+                    <span class="workout__unit">${workout.type === 'running' ? 'spm' : 'm'}</span>
+                  </div> 
+                </li>
+                <button class="btn btn__workout btn__workout--close btn--small" data-id='${workout.id}'><ion-icon class="close-circle" name="close-circle-outline"></ion-icon></button>
+            </div>
+        `
+        form.insertAdjacentHTML('afterend', html)
     }
 
     #_getPosition() {
@@ -80,23 +119,36 @@ class App {
         }
         // Marker of current user position
         const currPositionMarker = L.divIcon({
-           html:'<ion-icon class="icon--animated" name="pin"></ion-icon>',
-            iconSize:[38,38],
-            iconAnchor:[17,38],
-            popupAnchor:[0,-38]
+            html: '<ion-icon class="icon--animated" name="pin"></ion-icon>',
+            iconSize: [38, 38],
+            iconAnchor: [17, 38],
+            popupAnchor: [0, -38]
         })
-        this.#starterMarker = L.marker(coordsArray,{icon:currPositionMarker})
+        this.#starterMarker = L.marker(coordsArray, {icon: currPositionMarker})
             .addTo(this.#map)
             .bindPopup(L.popup({
                 autoClose: false,
             }))
             .setPopupContent("You're somewhere here!")
             .openPopup()
-        setTimeout(()=>this.#starterMarker.closePopup(),2000)
+        setTimeout(() => this.#starterMarker.closePopup(), 2000)
 
         // Event handler of map clicks and form appearing
         this.#map.on('click', this.#_showForm.bind(this))
     }
+
+    // _showTemp() {
+    //     this.#markerEvent = L.marker(this.#mapEvent.latlng).addTo(this.#map)
+    //     this.#markersArr.push(this.#markerEvent)
+    // }
+
+    // _hideTemp() {
+    //     this.#markersArr.map(el => el.remove())
+    // }
+
+    // _clearMarkersArr() {
+    //     this.#markersArr.splice(0)
+    // }
 
     #_loadDefaultMap() {
         alert('Could not get your position the service may not work correctly!')
@@ -116,10 +168,10 @@ class App {
         inputDuration.focus()
         // this._showTemp()
         const currMapClickIcon = L.divIcon({
-            html:'<ion-icon class="icon" name="footsteps"></ion-icon>',
-            iconSize:[20,20],
+            html: '<ion-icon class="icon" name="footsteps"></ion-icon>',
+            iconSize: [20, 20],
         })
-        const currentMapClickMarker = L.marker([lat,lng],{icon:currMapClickIcon}).addTo(this.#map)
+        const currentMapClickMarker = L.marker([lat, lng], {icon: currMapClickIcon}).addTo(this.#map)
         this.#markerTempClickArr.push(currentMapClickMarker)
         //cancel available when form shows up
         document.addEventListener('keydown', (evt) => {
@@ -144,19 +196,6 @@ class App {
 
     }
 
-    // _showTemp() {
-    //     this.#markerEvent = L.marker(this.#mapEvent.latlng).addTo(this.#map)
-    //     this.#markersArr.push(this.#markerEvent)
-    // }
-
-    // _hideTemp() {
-    //     this.#markersArr.map(el => el.remove())
-    // }
-
-    // _clearMarkersArr() {
-    //     this.#markersArr.splice(0)
-    // }
-
     // draw a shape of workout
     #_buildRouteTemp() {
         let lat1, lat2, lon1, lon2
@@ -165,9 +204,9 @@ class App {
         let distanceBetweenTwo = this.#_calculateDistance(lat1, lon1, lat2, lon2)
         this.#distance += distanceBetweenTwo
         inputDistance.textContent = `${
-            this.#distance>1
-                ?`${this.#distance.toFixed(2)} km`
-                :`${(this.#distance*1000).toFixed(1)} m`
+            this.#distance > 1
+                ? `${this.#distance.toFixed(2)} km`
+                : `${(this.#distance * 1000).toFixed(1)} m`
         }`
     }
 
@@ -215,18 +254,13 @@ class App {
         form.style.display = 'none'
         form.classList.add('hidden')
         this.#polilineStorageArrayCopy.forEach(el => el.remove(this.#map))
-        this.#markerTempClickArr.forEach(el=>el.remove(this.#map))
-        this.#markerTempClickArr =[]
+        this.#markerTempClickArr.forEach(el => el.remove(this.#map))
+        this.#markerTempClickArr = []
         this.#polilineStorageArrayCopy = []
         this.#mapEventsCoordsArray = []
         this.#distance = 0
         inputDistance.textContent = ''
         setTimeout(() => form.style.display = 'grid', 1000)
-    }
-
-    static _toggleElevationField() {
-        inputElevation.closest('.form__row').classList.toggle('form__row--hidden')
-        inputCadence.closest('.form__row').classList.toggle('form__row--hidden')
     }
 
     #_newWorkout(e) {
@@ -256,7 +290,7 @@ class App {
             }
             workout = new Cycling(this.#mapEventsCoordsArray, this.#distance.toFixed(2), duration, elevation)
         }
-        if(this.#distance<=0)return
+        if(this.#distance <= 0) return
         // Add new obj workout to workout array
         this.#workouts.push(workout)
 
@@ -275,46 +309,31 @@ class App {
         this.#_setLocalStorage()
     }
 
-    static #_renderWorkoutOnList(workout) {
-        //TODO make list scrollable obviously
-        const html = `
-            <div class="workout__item">
-                <li class="workout workout--${workout.type}" data-id="${workout.id}">
-                  <h2 class="workout__title">${workout.description}</h2>
-                  <button class="btn btn__workout btn__workout--edit btn--small"><ion-icon name="pencil-outline"></ion-icon></button>
-                  <div class="workout__details">
-                    <span class="workout__icon">${workout.type === 'running' ? '🏃' : '🚴'}</span>
-                    <span class="workout__value">${workout.distance}</span>
-                    <span class="workout__unit">km</span>
-                  </div>
-                  <div class="workout__details">
-                    <span class="workout__icon">⏱</span>
-                    <span class="workout__value">${workout.duration}</span>
-                    <span class="workout__unit">min</span>
-                  </div>
-                  <div class="workout__details">
-                    <span class="workout__icon">⚡</span>
-                    <span class="workout__value">${workout.type === 'running' ? workout.pace : workout.speed}</span>
-                    <span class="workout__unit">${workout.type === 'running' ? 'min/km' : 'km/h'}</span>
-                  </div>
-                  <div class="workout__details">
-                    <span class="workout__icon">${workout.type === 'running' ? '🦶' : '⛰'}</span>
-                    <span class="workout__value">${workout.type === 'running' ? workout.cadence : workout.elevation}</span>
-                    <span class="workout__unit">${workout.type === 'running' ? 'spm' : 'm'}</span>
-                  </div> 
-                </li>
-                <button class="btn btn__workout btn__workout--close btn--small" data-id='${workout.id}'><ion-icon class="close-circle" name="close-circle-outline"></ion-icon></button>
-            </div>
-        `
-        form.insertAdjacentHTML('afterend', html)
-    }
-
     #_renderWorkoutMarker(workout) {
         //TODO corresponding marker change
-        this.#markerEvent = L.marker(workout.coordsPointsArr[0])
-        this.#markerEvent.addTo(this.#map)
+        const startMarker = L.divIcon({
+            html: `<ion-icon
+                    class="icon"
+                    style="color:${workout.type !== 'running' ? '#ffb545' : '#00c46a'}"
+                    name="ellipse"
+                    ></ion-icon>`,
+            iconSize: [20, 20],
+        })
+        const endMarker = L.divIcon({
+            html: `<ion-icon
+                    class="icon"
+                    style="color:#2d3439"
+                    name="flag"
+                    ></ion-icon>`,
+            iconSize: [30, 30],
+        })
+        this.#markerEvent = L.marker(workout.coordsPointsArr[0], {icon: startMarker}).addTo(this.#map)
+        this.#markerEventEnd = L.marker(workout.coordsPointsArr.at(-1), {icon: endMarker}).addTo(this.#map)
         workout.markerId = this.#markerEvent._leaflet_id
+        workout.markerId2 = this.#markerEventEnd._leaflet_id
         this.#markerEvents.push(this.#markerEvent)
+        this.#markerEvents.push(this.#markerEventEnd)
+
         this.#markerEvent.bindPopup(L.popup({
             maxWidth: 300,
             minWidth: 100,
@@ -334,7 +353,7 @@ class App {
         const workoutEl = e.target.closest('.workout')
         if(!workoutEl) return;
         const workout = this.#workouts.find(el => el.id === workoutEl.dataset.id)
-        this.#map.setView(workout.coordsPointsArr[0], this.#mapZoom, {
+        this.#map.setView(workout.coordsPointsArr[0], this.#mapZoom +1, {
             animation: true, pan: {
                 duration: 1,
             }
@@ -348,12 +367,14 @@ class App {
         const workout = this.#workouts.find(el => el.id === closeEl.dataset.id)
         const workoutEl = document.querySelector(`.workout[data-id='${workout.id}']`)
         this.#markerEvent = this.#markerEvents.find(el => el._leaflet_id === workout.markerId)
+        this.#markerEventEnd = this.#markerEvents.find(el => el._leaflet_id === workout.markerId2)
         this.#markerEvents.splice(this.#markerEvents.findIndex(el => el === this.#markerEvent), 1)
         workoutEl.remove()
         closeEl.remove()
         // this._hideTemp()
         this.#_removeRouteSpecific(workout)
         this.#markerEvent.remove()
+        this.#markerEventEnd.remove()
 
         this.#workouts.splice(this.#workouts.findIndex(el => el.id === workout.id), 1)
         this.#_setLocalStorage()

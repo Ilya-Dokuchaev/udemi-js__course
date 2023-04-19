@@ -32,32 +32,33 @@ class App {
     #polilineStorageArray = [];
     #polilineStorageArrayCopy = [];
     #starterMarker;
+    #markerTempClickArr=[];
 
     constructor() {
-        this._getPosition()
-        this._getLocalStorage()
+        this.#_getPosition()
+        this.#_getLocalStorage()
         //------------------------------------------------------------------------------------------
         //Event Listeners
         // submitting the form and display the marker
-        form.addEventListener('submit', this._newWorkout.bind(this))
+        form.addEventListener('submit', this.#_newWorkout.bind(this))
         // changing the corresponding input fields depending on activity type
-        inputType.addEventListener('change', this._toggleElevationField)
-        containerWorkouts.addEventListener('click', this._moveToPopUp.bind(this))
-        containerWorkouts.addEventListener('click', this._deleteSpecWork.bind(this))
-        deleteALlEl.addEventListener('click', this._deleteAllWork.bind(this))
+        inputType.addEventListener('change', App._toggleElevationField)
+        containerWorkouts.addEventListener('click', this.#_moveToPopUp.bind(this))
+        containerWorkouts.addEventListener('click', this.#_deleteSpecWork.bind(this))
+        deleteALlEl.addEventListener('click', this.#_deleteAllWork.bind(this))
     }
 
-    _getPosition() {
+    #_getPosition() {
         // To get the coords and map display
-        navigator.geolocation.getCurrentPosition(this._loadMap.bind(this), // if the setting of not to show the location is on
-            this._loadDefaultMap.bind(this), {
+        navigator.geolocation.getCurrentPosition(this.#_loadMap.bind(this), // if the setting of not to show the location is on
+            this.#_loadDefaultMap.bind(this), {
                 enableHighAccuracy: true,
                 maximumAge: 5000,
                 timeout: 15000,
             })
     }
 
-    _loadMap(position) {
+    #_loadMap(position) {
         //The coords of user position
         const {latitude, longitude} = position.coords
         const coordsArray = [latitude, longitude]
@@ -70,16 +71,16 @@ class App {
         if(localStorage.length) {
             this.#workouts.forEach(el => {
                 //render marker from local storage
-                this._renderWorkoutMarker(el)
+                this.#_renderWorkoutMarker(el)
                 //get the coords of workouts from storage
                 this.#mapEventsCoordsArray = el.coordsPointsArr
                 // render route for each workout stored
-                this._renderRouteFromWorkout(el)
+                this.#_renderRouteFromWorkout(el)
             })
         }
         // Marker of current user position
         const currPositionMarker = L.divIcon({
-           html:'<ion-icon class="icon" name="navigate-circle"></ion-icon>',
+           html:'<ion-icon class="icon--animated" name="pin"></ion-icon>',
             iconSize:[38,38],
             iconAnchor:[17,38],
             popupAnchor:[0,-38]
@@ -91,21 +92,22 @@ class App {
             }))
             .setPopupContent("You're somewhere here!")
             .openPopup()
+        setTimeout(()=>this.#starterMarker.closePopup(),2000)
 
         // Event handler of map clicks and form appearing
-        this.#map.on('click', this._showForm.bind(this))
+        this.#map.on('click', this.#_showForm.bind(this))
     }
 
-    _loadDefaultMap() {
+    #_loadDefaultMap() {
         alert('Could not get your position the service may not work correctly!')
         this.#map = L.map('map').setView([51.505, -0.09], 13)
         L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
             attribution: '&copy; <a' + ' href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(this.#map);
-        this.#map.on('click', this._showForm.bind(this))
+        this.#map.on('click', this.#_showForm.bind(this))
     }
 
-    _showForm(mapE) {
+    #_showForm(mapE) {
         //the workaround of displaying temporary marker
         this.#mapEvent = mapE
         const {lat, lng} = this.#mapEvent.latlng
@@ -113,8 +115,24 @@ class App {
         this.#mapEventsCoordsArray.push([lat, lng])
         inputDuration.focus()
         // this._showTemp()
+        const currMapClickIcon = L.divIcon({
+            html:'<ion-icon class="icon" name="footsteps"></ion-icon>',
+            iconSize:[20,20],
+        })
+        const currentMapClickMarker = L.marker([lat,lng],{icon:currMapClickIcon}).addTo(this.#map)
+        this.#markerTempClickArr.push(currentMapClickMarker)
+        //cancel available when form shows up
+        document.addEventListener('keydown', (evt) => {
+            if(evt.key === 'Escape') {
+                this.#_hideForm()
+                // form.classList.add('hidden')
+                // this._hideTemp()
+                // this._removeRouteSpecific()
+                // this._clearMarkersArr()
+            }
+        })
         if(this.#mapEventsCoordsArray.length <= 1) return
-        this._buildRouteTemp()
+        this.#_buildRouteTemp()
         const polylineTemp = L.polyline(this.#mapEventsCoordsArray, {
             color: 'red',
             lineCap: "butt",
@@ -123,16 +141,7 @@ class App {
         this.#polilineStorageArrayCopy.push(polylineTemp)
         this.#polilineStorageArrayCopy.forEach(el => el.addTo(this.#map))
         this.#starterMarker.closePopup()
-        //cancel available when form shows up
-        form.addEventListener('keydown', (evt) => {
-            if(evt.key === 'Escape') {
-                this._hideForm()
-                // form.classList.add('hidden')
-                // this._hideTemp()
-                // this._removeRouteSpecific()
-                // this._clearMarkersArr()
-            }
-        })
+
     }
 
     // _showTemp() {
@@ -149,17 +158,21 @@ class App {
     // }
 
     // draw a shape of workout
-    _buildRouteTemp() {
+    #_buildRouteTemp() {
         let lat1, lat2, lon1, lon2
         [lat1, lon1] = this.#mapEventsCoordsArray.at(-2);
         [lat2, lon2] = this.#mapEventsCoordsArray.at(-1)
-        let distanceBetweenTwo = this._calculateDistance(lat1, lon1, lat2, lon2)
+        let distanceBetweenTwo = this.#_calculateDistance(lat1, lon1, lat2, lon2)
         this.#distance += distanceBetweenTwo
-        inputDistance.textContent = `${this.#distance.toFixed(2)} km`
+        inputDistance.textContent = `${
+            this.#distance>1
+                ?`${this.#distance.toFixed(2)} km`
+                :`${(this.#distance*1000).toFixed(1)} m`
+        }`
     }
 
-    _renderRouteFromWorkout(workout) {
-        this._buildRouteTemp()
+    #_renderRouteFromWorkout(workout) {
+        this.#_buildRouteTemp()
         this.#polyline = L.polyline(this.#mapEventsCoordsArray,
             {
                 color: `${workout.type !== 'running' ? '#ffb545' : '#00c46a'}`,
@@ -174,7 +187,7 @@ class App {
         this.#mapEventsCoordsArray = []
     }
 
-    _calculateDistance(lat1, lon1, lat2, lon2) {
+    #_calculateDistance(lat1, lon1, lat2, lon2) {
         const R = 6371; // Radius of the earth in km
         const dLat = deg2rad(lat2 - lat1);  // deg2rad below
         const dLon = deg2rad(lon2 - lon1);
@@ -192,16 +205,18 @@ class App {
         }
     }
 
-    _removeRouteSpecific(workout) {
+    #_removeRouteSpecific(workout) {
         this.#polyline = this.#polilineStorageArray.find(el => el._leaflet_id === workout.routeId)
         this.#polilineStorageArray.splice(this.#polilineStorageArray.findIndex(el => el === this.#polyline), 1)
         this.#polyline.remove()
     }
 
-    _hideForm() {
+    #_hideForm() {
         form.style.display = 'none'
         form.classList.add('hidden')
         this.#polilineStorageArrayCopy.forEach(el => el.remove(this.#map))
+        this.#markerTempClickArr.forEach(el=>el.remove(this.#map))
+        this.#markerTempClickArr =[]
         this.#polilineStorageArrayCopy = []
         this.#mapEventsCoordsArray = []
         this.#distance = 0
@@ -209,12 +224,12 @@ class App {
         setTimeout(() => form.style.display = 'grid', 1000)
     }
 
-    _toggleElevationField() {
+    static _toggleElevationField() {
         inputElevation.closest('.form__row').classList.toggle('form__row--hidden')
         inputCadence.closest('.form__row').classList.toggle('form__row--hidden')
     }
 
-    _newWorkout(e) {
+    #_newWorkout(e) {
         e.preventDefault()
         let workout;
         // Get data from forms
@@ -241,25 +256,26 @@ class App {
             }
             workout = new Cycling(this.#mapEventsCoordsArray, this.#distance.toFixed(2), duration, elevation)
         }
+        if(this.#distance<=0)return
         // Add new obj workout to workout array
         this.#workouts.push(workout)
 
         // Render marker on map and workout
         // display the marker
-        this._renderWorkoutMarker(workout)
+        this.#_renderWorkoutMarker(workout)
         //Render workout on list
-        this._renderWorkoutOnList(workout)
-        this._renderRouteFromWorkout(workout)
+        App.#_renderWorkoutOnList(workout)
+        this.#_renderRouteFromWorkout(workout)
         // this._clearMarkersArr()
         // clearing the input fields
         inputElArr.forEach(el => el.value = '')
-        this._hideForm()
+        this.#_hideForm()
         // remove form from workout list
         //setting the localStorage
-        this._setLocalStorage()
+        this.#_setLocalStorage()
     }
 
-    _renderWorkoutOnList(workout) {
+    static #_renderWorkoutOnList(workout) {
         //TODO make list scrollable obviously
         const html = `
             <div class="workout__item">
@@ -293,7 +309,7 @@ class App {
         form.insertAdjacentHTML('afterend', html)
     }
 
-    _renderWorkoutMarker(workout) {
+    #_renderWorkoutMarker(workout) {
         //TODO corresponding marker change
         this.#markerEvent = L.marker(workout.coordsPointsArr[0])
         this.#markerEvent.addTo(this.#map)
@@ -314,7 +330,7 @@ class App {
 
     }
 
-    _moveToPopUp(e) {
+    #_moveToPopUp(e) {
         const workoutEl = e.target.closest('.workout')
         if(!workoutEl) return;
         const workout = this.#workouts.find(el => el.id === workoutEl.dataset.id)
@@ -326,7 +342,7 @@ class App {
     }
 
     //The deleting option of specific workout
-    _deleteSpecWork(e) {
+    #_deleteSpecWork(e) {
         const closeEl = e.target.closest('.btn__workout--close')
         if(!closeEl) return
         const workout = this.#workouts.find(el => el.id === closeEl.dataset.id)
@@ -336,15 +352,15 @@ class App {
         workoutEl.remove()
         closeEl.remove()
         // this._hideTemp()
-        this._removeRouteSpecific(workout)
+        this.#_removeRouteSpecific(workout)
         this.#markerEvent.remove()
 
         this.#workouts.splice(this.#workouts.findIndex(el => el.id === workout.id), 1)
-        this._setLocalStorage()
+        this.#_setLocalStorage()
     }
 
     // delete all workouts at once
-    _deleteAllWork() {
+    #_deleteAllWork() {
         const allWorkouts = document.querySelectorAll('.workout')
         const allCloseEl = document.querySelectorAll('.btn__workout--close')
         allWorkouts.forEach(el => el.remove())
@@ -353,11 +369,11 @@ class App {
         this.#markerEvents = []
         this.#polilineStorageArray.forEach(el => el.remove())
         this.#workouts = []
-        this._setLocalStorage()
+        this.#_setLocalStorage()
         // this._hideTemp()
     }
 
-    _getLocalStorage() {
+    #_getLocalStorage() {
         const data = JSON.parse(localStorage.getItem('workouts'))
         if(!data) return
         //fix the localStorage prototype chain
@@ -365,11 +381,11 @@ class App {
             return Object.assign(el.type === 'running' ? new Running() : new Cycling(), el)
         })
         this.#workouts.forEach(el => {
-            this._renderWorkoutOnList(el)
+            App.#_renderWorkoutOnList(el)
         })
     }
 
-    _setLocalStorage() {
+    #_setLocalStorage() {
         localStorage.setItem('workouts', JSON.stringify(this.#workouts))
     }
 }

@@ -30,6 +30,7 @@ class App {
     #distance = 0;
     #polyline;
     #polilineStorageArray = [];
+    #polilineStorageArrayCopy = [];
 
     constructor() {
         this._getPosition()
@@ -105,6 +106,11 @@ class App {
         // this._showTemp()
         if(this.#mapEventsCoordsArray.length <= 1) return
         this._buildRouteTemp()
+        const polylineTemp = L.polyline(this.#mapEventsCoordsArray, {color: 'red'})
+        this.#polilineStorageArrayCopy.push(polylineTemp)
+        if(this.#polilineStorageArrayCopy.length > 0) {
+            this.#polilineStorageArrayCopy.forEach(el => el.addTo(this.#map))
+        }
         //cancel available when form shows up
         form.addEventListener('keydown', (evt) => {
             if(evt.key === 'Escape') {
@@ -133,11 +139,10 @@ class App {
     // draw a shape of workout
     _buildRouteTemp() {
 
-        let lat1, lat2, lon1, lon2
         this.#polyline = L.polyline(this.#mapEventsCoordsArray, {color: 'red'})
         this.#polilineStorageArray.push(this.#polyline);
-        this.#polyline.addTo(this.#map);
 
+        let lat1, lat2, lon1, lon2
         [lat1, lon1] = this.#mapEventsCoordsArray.at(-2);
         [lat2, lon2] = this.#mapEventsCoordsArray.at(-1)
         let distanceBetweenTwo = this._calculateDistance(lat1, lon1, lat2, lon2)
@@ -147,6 +152,7 @@ class App {
 
     _renderRouteFromWorkout(workout) {
         this._buildRouteTemp()
+        this.#polyline.addTo(this.#map)
         this.#distance = 0
         inputDistance.textContent = ''
         workout.routeId = this.#polyline._leaflet_id
@@ -174,12 +180,15 @@ class App {
     _removeRouteSpecific(workout) {
         this.#polyline = this.#polilineStorageArray.find(el => el._leaflet_id === workout.routeId)
         this.#polilineStorageArray.splice(this.#polilineStorageArray.findIndex(el => el === this.#polyline), 1)
-        this.#polyline.removeFrom(this.#map)
+        this.#polyline.remove()
     }
 
     _hideForm() {
         form.style.display = 'none'
         form.classList.add('hidden')
+        this.#polilineStorageArrayCopy.forEach(el => el.remove(this.#map))
+        this.#polilineStorageArrayCopy = []
+        this.#mapEventsCoordsArray = []
         this.#distance = 0
         inputDistance.textContent = ''
         setTimeout(() => form.style.display = 'grid', 1000)
@@ -229,8 +238,8 @@ class App {
         // this._clearMarkersArr()
         // clearing the input fields
         inputElArr.forEach(el => el.value = '')
-        // remove form from workout list
         this._hideForm()
+        // remove form from workout list
         //setting the localStorage
         this._setLocalStorage()
     }
@@ -327,6 +336,7 @@ class App {
         allCloseEl.forEach(el => el.remove())
         this.#markerEvents.forEach(el => el.remove())
         this.#markerEvents = []
+        this.#polilineStorageArray.forEach(el => el.remove())
         this.#workouts = []
         this._setLocalStorage()
         // this._hideTemp()

@@ -31,6 +31,7 @@ class App {
     #polyline;
     #polilineStorageArray = [];
     #polilineStorageArrayCopy = [];
+    #starterMarker;
 
     constructor() {
         this._getPosition()
@@ -66,23 +67,31 @@ class App {
         L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
             attribution: '&copy; <a' + ' href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(this.#map);
-        //render marker from local storage
         if(localStorage.length) {
             this.#workouts.forEach(el => {
+                //render marker from local storage
                 this._renderWorkoutMarker(el)
+                //get the coords of workouts from storage
                 this.#mapEventsCoordsArray = el.coordsPointsArr
+                // render route for each workout stored
                 this._renderRouteFromWorkout(el)
             })
         }
         // Marker of current user position
-        //TODO marker change
-        L.marker(coordsArray)
+        const currPositionMarker = L.divIcon({
+           html:'<ion-icon class="icon" name="navigate-circle"></ion-icon>',
+            iconSize:[38,38],
+            iconAnchor:[17,38],
+            popupAnchor:[0,-38]
+        })
+        this.#starterMarker = L.marker(coordsArray,{icon:currPositionMarker})
             .addTo(this.#map)
             .bindPopup(L.popup({
-                autoClose: false, closeOnClick: false,
+                autoClose: false,
             }))
             .setPopupContent("You're somewhere here!")
             .openPopup()
+
         // Event handler of map clicks and form appearing
         this.#map.on('click', this._showForm.bind(this))
     }
@@ -106,11 +115,14 @@ class App {
         // this._showTemp()
         if(this.#mapEventsCoordsArray.length <= 1) return
         this._buildRouteTemp()
-        const polylineTemp = L.polyline(this.#mapEventsCoordsArray, {color: 'red'})
+        const polylineTemp = L.polyline(this.#mapEventsCoordsArray, {
+            color: 'red',
+            lineCap: "butt",
+            dashArray: '4'
+        })
         this.#polilineStorageArrayCopy.push(polylineTemp)
-        if(this.#polilineStorageArrayCopy.length > 0) {
-            this.#polilineStorageArrayCopy.forEach(el => el.addTo(this.#map))
-        }
+        this.#polilineStorageArrayCopy.forEach(el => el.addTo(this.#map))
+        this.#starterMarker.closePopup()
         //cancel available when form shows up
         form.addEventListener('keydown', (evt) => {
             if(evt.key === 'Escape') {
@@ -138,10 +150,6 @@ class App {
 
     // draw a shape of workout
     _buildRouteTemp() {
-
-        this.#polyline = L.polyline(this.#mapEventsCoordsArray, {color: 'red'})
-        this.#polilineStorageArray.push(this.#polyline);
-
         let lat1, lat2, lon1, lon2
         [lat1, lon1] = this.#mapEventsCoordsArray.at(-2);
         [lat2, lon2] = this.#mapEventsCoordsArray.at(-1)
@@ -152,6 +160,13 @@ class App {
 
     _renderRouteFromWorkout(workout) {
         this._buildRouteTemp()
+        this.#polyline = L.polyline(this.#mapEventsCoordsArray,
+            {
+                color: `${workout.type !== 'running' ? '#ffb545' : '#00c46a'}`,
+                lineCap: "round",
+                weight: 4
+            })
+        this.#polilineStorageArray.push(this.#polyline);
         this.#polyline.addTo(this.#map)
         this.#distance = 0
         inputDistance.textContent = ''

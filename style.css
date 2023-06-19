@@ -282,8 +282,8 @@ a:visited {
     border-left: 5px solid var(--color-brand--1);
 }
 .leaflet-div-icon{
-    background: none;!important;
-    border: none;!important;
+    background: none !important;
+    border: none !important;
 }
 .leaflet-div-icon .icon{
     color: #42484d;

@@ -59,7 +59,6 @@ class App {
             <div class="workout__item">
                 <li class="workout workout--${workout.type}" data-id="${workout.id}">
                   <h2 class="workout__title">${workout.description}</h2>
-                  <button class="btn btn__workout btn__workout--edit btn--small"><ion-icon name="pencil-outline"></ion-icon></button>
                   <div class="workout__details">
                     <span class="workout__icon">${workout.type === 'running' ? '🏃' : '🚴'}</span>
                     <span class="workout__value">${workout.distance}</span>

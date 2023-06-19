@@ -4,6 +4,8 @@
 //TODO real alert and messages and input confirmation
 //TODO show all workouts - zoom out of min,max,lng/lat
 //TODO more UI friendly
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import {Cycling, Running} from "./workout.js";
 //global variables of HTML elements
 const form = document.querySelector('.form');

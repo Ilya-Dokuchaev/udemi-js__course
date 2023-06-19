@@ -221,7 +221,6 @@ a:visited {
     background-color: var(--color-light--3);
     transition: all 0.2s;
 }
-
 .form__input:focus {
     outline: none;
     background-color: #fff;
@@ -280,8 +279,8 @@ a:visited {
     border-left: 5px solid var(--color-brand--1);
 }
 .leaflet-div-icon{
-    background: none;
-    border: none;
+    background: none !important;
+    border: none !important;
 }
 .leaflet-div-icon .icon{
     color: #42484d;
